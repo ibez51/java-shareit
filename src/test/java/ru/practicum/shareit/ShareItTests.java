@@ -145,5 +145,9 @@ class ShareItTests {
 
         assertEquals(2, itemController.searchItems("дРеЛь").size());
         assertEquals(0, itemController.searchItems("").size());
+
+        assertEquals(3, itemController.searchItems("дР").size());
+        userController.deleteUser(userDto1.getId());
+        assertEquals(2, itemController.searchItems("дР").size());
     }
 }

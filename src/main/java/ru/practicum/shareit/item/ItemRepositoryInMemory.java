@@ -16,7 +16,9 @@ public class ItemRepositoryInMemory implements ItemRepository {
 
     @Override
     public List<Item> getAllItems(Integer userId) {
-        return itemsMap.values().stream().filter(x -> x.getOwnerId() == userId).collect(Collectors.toList());
+        return itemsMap.values().stream()
+                .filter(x -> x.getOwnerId() == userId)
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -26,7 +28,11 @@ public class ItemRepositoryInMemory implements ItemRepository {
 
     @Override
     public List<Item> searchItems(String text) {
-        return itemsMap.values().stream().filter(Item::getAvailable).filter(x -> x.getName().toLowerCase().contains(text.toLowerCase()) || x.getDescription().toLowerCase().contains(text.toLowerCase())).collect(Collectors.toList());
+        return itemsMap.values().stream()
+                .filter(Item::getAvailable)
+                .filter(x -> x.getName().toLowerCase().contains(text.toLowerCase())
+                        || x.getDescription().toLowerCase().contains(text.toLowerCase()))
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -40,6 +46,16 @@ public class ItemRepositoryInMemory implements ItemRepository {
     @Override
     public Item updateItem(Item item) {
         return itemsMap.put(item.getId(), item);
+    }
+
+    @Override
+    public void deleteItemsByUser(Integer userId) {
+        List<Integer> itemsListToDelete = itemsMap.values().stream()
+                .filter(x -> x.getOwnerId() == userId)
+                .map(Item::getId)
+                .collect(Collectors.toList());
+
+        itemsListToDelete.forEach(itemsMap.keySet()::remove);
     }
 
     private Integer getId() {

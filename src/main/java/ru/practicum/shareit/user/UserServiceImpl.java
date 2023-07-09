@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.exceptions.UserValidationConflictException;
 import ru.practicum.shareit.exceptions.UserValidationException;
+import ru.practicum.shareit.item.ItemRepository;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.model.User;
 
@@ -16,6 +17,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
+    private final ItemRepository itemRepository;
 
     @Override
     public List<UserDto> getAllUsers() {
@@ -68,6 +70,8 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void deleteUser(Integer userId) {
+        itemRepository.deleteItemsByUser(userId);
+
         userRepository.deleteUser(userId);
     }
 
