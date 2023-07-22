@@ -3,9 +3,7 @@ package ru.practicum.shareit.item;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.practicum.shareit.booking.BookingMapper;
 import ru.practicum.shareit.booking.BookingRepository;
-import ru.practicum.shareit.booking.dto.BookingForItemDto;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.model.BookingStatus;
 import ru.practicum.shareit.exceptions.CommentCreateNotAllowedException;
@@ -16,9 +14,7 @@ import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemUpdateDto;
 import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
-import ru.practicum.shareit.user.UserMapper;
 import ru.practicum.shareit.user.UserService;
-import ru.practicum.shareit.user.model.User;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -33,60 +29,53 @@ public class ItemServiceImpl implements ItemService {
     private final CommentRepository commentRepository;
     private final BookingRepository bookingRepository;
     private final UserService userService;
+    private final ItemMapper itemMapper;
+    private final CommentMapper commentMapper;
     private static final Set<String> BAD_BOOKING_STATUS_SET = Set.of(BookingStatus.REJECTED.name(), BookingStatus.CANCELED.name());
 
     @Override
     public List<ItemDto> getAllItems(Integer userId) {
-        List<ItemDto> itemDtoList = itemRepository.findByOwnerId(userId).stream()
-                .map(ItemMapper::itemToItemDto)
+        List<Item> itemList = itemRepository.findByOwnerId(userId);
+        Map<Integer, Item> itemMap = itemList.stream()
+                .collect(Collectors.toMap(Item::getId, Function.identity()));
+
+        List<Booking> lastBookingList = bookingRepository.findLastBooking(itemMap.keySet(), BAD_BOOKING_STATUS_SET, LocalDateTime.now());
+        List<Booking> nextBookingList = bookingRepository.findNextBooking(itemMap.keySet(), BAD_BOOKING_STATUS_SET, LocalDateTime.now());
+
+        Map<Integer, Booking> lastBookingMap = lastBookingList.stream()
+                .collect(Collectors.toMap(book -> book.getItem().getId(),
+                        Function.identity()));
+        Map<Integer, Booking> nextBookingMap = nextBookingList.stream()
+                .collect(Collectors.toMap(book -> book.getItem().getId(),
+                        Function.identity()));
+
+        return itemList.stream()
+                .map(x -> itemMapper.toDto(x, lastBookingMap.get(x.getId()), nextBookingMap.get(x.getId())))
                 .collect(Collectors.toList());
-        Map<Integer, ItemDto> itemDtoMap = itemDtoList.stream()
-                .collect(Collectors.toMap(ItemDto::getId, Function.identity()));
-
-        List<Booking> lastBookingList = bookingRepository.findLastBooking(itemDtoMap.keySet(), BAD_BOOKING_STATUS_SET, LocalDateTime.now());
-        List<Booking> nextBookingList = bookingRepository.findNextBooking(itemDtoMap.keySet(), BAD_BOOKING_STATUS_SET, LocalDateTime.now());
-
-        Map<Integer, BookingForItemDto> lastBookingForItemDtoMap = lastBookingList.stream()
-                .collect(Collectors.toMap(book -> book.getItem().getId(),
-                        BookingMapper::bookingToBookingForItemDto));
-        Map<Integer, BookingForItemDto> nextBookingForItemDtoMap = nextBookingList.stream()
-                .collect(Collectors.toMap(book -> book.getItem().getId(),
-                        BookingMapper::bookingToBookingForItemDto));
-
-        itemDtoList.forEach(x -> x.setLastBooking(lastBookingForItemDtoMap.get(x.getId())));
-        itemDtoList.forEach(x -> x.setNextBooking(nextBookingForItemDtoMap.get(x.getId())));
-
-        return itemDtoList;
     }
 
     @Override
-    public ItemDto getItem(Integer userId,
-                           Integer itemId) {
-        Item item = itemRepository.findById(itemId)
-                .orElseThrow(() -> new NullPointerException("Предмет с Id " + itemId + " не найден."));
-        ItemDto itemDto = ItemMapper.itemToItemDto(item);
+    public ItemDto getItemDto(Integer userId,
+                              Integer itemId) {
+        Booking lastBooking = null;
+        Booking nextBooking = null;
 
-        if (userId == item.getOwnerId()) {
-            Booking lastBooking = bookingRepository.findLastBooking(Set.of(itemId), BAD_BOOKING_STATUS_SET, LocalDateTime.now()).stream()
+        Item item = getItem(itemId);
+
+        if (userId == item.getOwner().getId()) {
+            lastBooking = bookingRepository.findLastBooking(Set.of(itemId), BAD_BOOKING_STATUS_SET, LocalDateTime.now()).stream()
                     .findFirst()
                     .orElse(null);
-            if (Objects.nonNull(lastBooking)) {
-                itemDto.setLastBooking(BookingMapper.bookingToBookingForItemDto(lastBooking));
-            }
 
-            Booking nextBooking = bookingRepository.findNextBooking(Set.of(itemId), BAD_BOOKING_STATUS_SET, LocalDateTime.now()).stream()
+            nextBooking = bookingRepository.findNextBooking(Set.of(itemId), BAD_BOOKING_STATUS_SET, LocalDateTime.now()).stream()
                     .findFirst()
                     .orElse(null);
-            if (Objects.nonNull(nextBooking)) {
-                itemDto.setNextBooking(BookingMapper.bookingToBookingForItemDto(nextBooking));
-            }
         }
 
-        itemDto.setComments(commentRepository.findByItemIdOrderByCreatedAsc(itemId).stream()
-                .map(CommentMapper::commentToCommentOutputDto)
-                .collect(Collectors.toList()));
-
-        return itemDto;
+        return itemMapper.toDto(item,
+                lastBooking,
+                nextBooking,
+                commentRepository.findByItemIdOrderByCreatedAsc(itemId));
     }
 
     @Override
@@ -97,7 +86,7 @@ public class ItemServiceImpl implements ItemService {
         }
 
         return itemRepository.findItemsByAvailabilityAndNameOrDesc(text).stream()
-                .map(ItemMapper::itemToItemDto)
+                .map(itemMapper::toDto)
                 .collect(Collectors.toList());
     }
 
@@ -105,11 +94,9 @@ public class ItemServiceImpl implements ItemService {
     @Transactional
     public ItemDto addItem(Integer userId,
                            ItemDto itemDto) {
-        userService.getUser(userId);
+        Item item = itemMapper.toItem(itemDto, userService.getUser(userId));
 
-        Item item = ItemMapper.itemDtoToItem(itemDto).setOwnerId(userId);
-
-        return ItemMapper.itemToItemDto(itemRepository.save(item));
+        return itemMapper.toDto(itemRepository.save(item));
     }
 
     @Override
@@ -121,15 +108,13 @@ public class ItemServiceImpl implements ItemService {
             throw new CommentCreateNotAllowedException("Вы не можете оставить комментарий на продукт с Id " + itemId);
         }
 
-        Comment comment = CommentMapper.commentCreateDtoToComment(commentCreateDto);
-        User user = UserMapper.userDtoToUser(userService.getUser(userId));
-        Item item = ItemMapper.itemDtoToItem(getItem(userId, itemId));
-
-        comment.setItem(item).setAuthor(user);
+        Comment comment = commentMapper.toComment(commentCreateDto,
+                getItem(itemId),
+                userService.getUser(userId));
 
         commentRepository.save(comment);
 
-        return CommentMapper.commentToCommentOutputDto(comment);
+        return commentMapper.toOutputDto(comment);
     }
 
     @Override
@@ -137,23 +122,20 @@ public class ItemServiceImpl implements ItemService {
     public ItemDto updateItem(Integer itemId,
                               Integer userId,
                               ItemUpdateDto itemUpdateDto) {
-        Item item = itemRepository.findById(itemId)
-                .orElseThrow(() -> new NullPointerException("Предмет с Id " + itemId + " не найден."));
+        Item item = getItem(itemId);
 
-        if (item.getOwnerId() != userId) {
+        if (item.getOwner().getId() != userId) {
             throw new ItemOwnerConflictException("Предмет не принадлежит пользователю " + userId);
         }
 
-        if (Objects.nonNull(itemUpdateDto.getName())) {
-            item.setName(itemUpdateDto.getName());
-        }
-        if (Objects.nonNull(itemUpdateDto.getDescription())) {
-            item.setDescription(itemUpdateDto.getDescription());
-        }
-        if (Objects.nonNull(itemUpdateDto.getAvailable())) {
-            item.setAvailable(itemUpdateDto.getAvailable());
-        }
+        itemMapper.updateItem(itemUpdateDto, item);
 
-        return ItemMapper.itemToItemDto(itemRepository.save(item));
+        return itemMapper.toDto(itemRepository.save(item));
+    }
+
+    @Override
+    public Item getItem(Integer itemId) {
+        return itemRepository.findById(itemId)
+                .orElseThrow(() -> new NullPointerException("Предмет с Id " + itemId + " не найден."));
     }
 }

@@ -42,6 +42,7 @@ class ShareItTests {
     void contextLoads() {
         assertThat(userController).isNotNull();
         assertThat(itemController).isNotNull();
+        assertThat(bookingController).isNotNull();
     }
 
     @Test

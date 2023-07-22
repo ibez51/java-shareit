@@ -10,10 +10,8 @@ import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.model.BookingFilterState;
 import ru.practicum.shareit.booking.model.BookingStatus;
 import ru.practicum.shareit.exceptions.*;
-import ru.practicum.shareit.item.ItemMapper;
 import ru.practicum.shareit.item.ItemService;
 import ru.practicum.shareit.item.model.Item;
-import ru.practicum.shareit.user.UserMapper;
 import ru.practicum.shareit.user.UserService;
 import ru.practicum.shareit.user.model.User;
 
@@ -28,19 +26,14 @@ public class BookingServiceImpl implements BookingService {
     private final BookingRepository bookingRepository;
     private final ItemService itemService;
     private final UserService userService;
+    private final BookingMapper bookingMapper;
 
     @Override
-    public BookingDto getBooking(Integer userId,
-                                 Integer bookingId) {
-        Booking booking = bookingRepository.findById(bookingId)
-                .orElseThrow(() -> new NullPointerException("Бронирование с Id " + bookingId + " не найдено."));
+    public BookingDto getBookingDto(Integer userId,
+                                    Integer bookingId) {
+        Booking booking = getBooking(userId, bookingId);
 
-        if (booking.getBooker().getId() != userId
-                && booking.getItem().getOwnerId() != userId) {
-            throw new NullPointerException("Бронирование с Id " + bookingId + " не найдено.");
-        }
-
-        return BookingMapper.bookingToBookingDto(booking);
+        return bookingMapper.toDto(booking);
     }
 
     @Override
@@ -76,7 +69,7 @@ public class BookingServiceImpl implements BookingService {
         }
 
         return bookingList.stream()
-                .map(BookingMapper::bookingToBookingDto)
+                .map(bookingMapper::toDto)
                 .collect(Collectors.toList());
     }
 
@@ -113,7 +106,7 @@ public class BookingServiceImpl implements BookingService {
         }
 
         return bookingList.stream()
-                .map(BookingMapper::bookingToBookingDto)
+                .map(bookingMapper::toDto)
                 .collect(Collectors.toList());
     }
 
@@ -121,9 +114,9 @@ public class BookingServiceImpl implements BookingService {
     @Transactional
     public BookingDto addBooking(Integer userId,
                                  BookingIncomingDto bookingIncomingDto) {
-        Item item = ItemMapper.itemDtoToItem(itemService.getItem(userId, bookingIncomingDto.getItemId()));
+        Item item = itemService.getItem(bookingIncomingDto.getItemId());
 
-        if (item.getOwnerId() == userId) {
+        if (item.getOwner().getId() == userId) {
             throw new AccessForChangesDeniedException("Вы не можете забронировать свой же предмет");
         }
 
@@ -131,7 +124,7 @@ public class BookingServiceImpl implements BookingService {
             throw new ItemIsUnavailableException("Предмет с Id " + bookingIncomingDto.getItemId() + " недоступен для бронирования.");
         }
 
-        User user = UserMapper.userDtoToUser(userService.getUser(userId));
+        User user = userService.getUser(userId);
 
         if (bookingIncomingDto.getEnd().isBefore(LocalDateTime.now())
                 || bookingIncomingDto.getStart().isBefore(LocalDateTime.now())) {
@@ -143,14 +136,11 @@ public class BookingServiceImpl implements BookingService {
             throw new DateTimeValidationException("Дата окончания бронирования не может быть раньше или равна дате начала.");
         }
 
-        Booking booking = BookingMapper.bookingIncomingDtoToBooking(bookingIncomingDto)
-                .setItem(item)
-                .setBooker(user)
-                .setStatus(BookingStatus.WAITING);
+        Booking booking = bookingMapper.toBooking(bookingIncomingDto, item, user, BookingStatus.WAITING);
 
         bookingRepository.save(booking);
 
-        return BookingMapper.bookingToBookingDto(booking);
+        return bookingMapper.toDto(booking);
     }
 
     @Override
@@ -162,7 +152,7 @@ public class BookingServiceImpl implements BookingService {
                 .orElseThrow(() -> new NullPointerException("Бронь с Id " + bookingId + " не найдена."));
 
         Item item = booking.getItem();
-        if (item.getOwnerId() != userId) {
+        if (item.getOwner().getId() != userId) {
             throw new AccessForChangesDeniedException("Доступ к бронированию запрещен.");
         }
 
@@ -174,7 +164,21 @@ public class BookingServiceImpl implements BookingService {
                 BookingStatus.APPROVED :
                 BookingStatus.REJECTED);
 
-        return BookingMapper.bookingToBookingDto(bookingRepository.save(booking));
+        return bookingMapper.toDto(bookingRepository.save(booking));
+    }
+
+    @Override
+    public Booking getBooking(Integer userId,
+                              Integer bookingId) {
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new NullPointerException("Бронирование с Id " + bookingId + " не найдено."));
+
+        if (booking.getBooker().getId() != userId
+                && booking.getItem().getOwner().getId() != userId) {
+            throw new NullPointerException("Бронирование с Id " + bookingId + " не найдено.");
+        }
+
+        return booking;
     }
 
     private BookingFilterState bookingFilterStateFromString(String state) {

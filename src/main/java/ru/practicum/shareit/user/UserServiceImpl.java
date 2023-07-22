@@ -9,7 +9,6 @@ import ru.practicum.shareit.user.dto.UserUpdateDto;
 import ru.practicum.shareit.user.model.User;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -17,50 +16,46 @@ import java.util.stream.Collectors;
 @Transactional(readOnly = true)
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
+    private final UserMapper userMapper;
 
     @Override
     public List<UserDto> getAllUsers() {
         return userRepository.findAll().stream()
-                .map(UserMapper::userToUserDto)
+                .map(userMapper::toDto)
                 .collect(Collectors.toList());
     }
 
     @Override
-    public UserDto getUser(Integer userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new NullPointerException("Пользователь с Id " + userId + " не найден."));
-
-        return UserMapper.userToUserDto(user);
+    public UserDto getUserDto(Integer userId) {
+        return userMapper.toDto(getUser(userId));
     }
 
     @Override
     @Transactional
     public UserDto addUser(UserDto userDto) {
-        return UserMapper.userToUserDto(userRepository.save(UserMapper.userDtoToUser(userDto)));
+        return userMapper.toDto(userRepository.save(userMapper.toUser(userDto)));
     }
 
     @Override
     @Transactional
     public UserDto updateUser(Integer userId,
                               UserUpdateDto userUpdateDto) {
-        User user;
+        User user = getUser(userId);
 
-        user = userRepository.findById(userId)
-                .orElseThrow(() -> new NullPointerException("Пользователь с Id " + userId + " не найден."));
+        userMapper.updateUser(userUpdateDto, user);
 
-        if (Objects.nonNull(userUpdateDto.getName())) {
-            user.setName(userUpdateDto.getName());
-        }
-        if (Objects.nonNull(userUpdateDto.getEmail())) {
-            user.setEmail(userUpdateDto.getEmail());
-        }
-
-        return UserMapper.userToUserDto(userRepository.save(user));
+        return userMapper.toDto(userRepository.save(user));
     }
 
     @Override
     @Transactional
     public void deleteUser(Integer userId) {
         userRepository.deleteById(userId);
+    }
+
+    @Override
+    public User getUser(Integer userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new NullPointerException("Пользователь с Id " + userId + " не найден."));
     }
 }

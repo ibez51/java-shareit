@@ -24,7 +24,7 @@ public class ItemController {
     @GetMapping("/{id}")
     public ItemDto getItem(@RequestHeader(name = "X-Sharer-User-Id") Integer userId,
                            @PathVariable(name = "id") Integer itemId) {
-        return itemService.getItem(userId, itemId);
+        return itemService.getItemDto(userId, itemId);
     }
 
     @GetMapping("/search")

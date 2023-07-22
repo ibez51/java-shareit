@@ -27,6 +27,7 @@ public class Booking {
     @ManyToOne(fetch = FetchType.LAZY)
     private Item item;
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "booker_id")
     private User booker;
     @Enumerated(EnumType.STRING)
     private BookingStatus status;
