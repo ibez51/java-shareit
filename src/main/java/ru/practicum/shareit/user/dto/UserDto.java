@@ -1,13 +1,13 @@
 package ru.practicum.shareit.user.dto;
 
-import lombok.Builder;
 import lombok.Data;
+import lombok.experimental.Accessors;
 
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 
 @Data
-@Builder
+@Accessors(chain = true)
 public class UserDto {
     private int id;
     @NotBlank

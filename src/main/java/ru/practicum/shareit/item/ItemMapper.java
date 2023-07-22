@@ -1,9 +1,6 @@
 package ru.practicum.shareit.item;
 
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.mapstruct.MappingTarget;
-import org.mapstruct.NullValuePropertyMappingStrategy;
+import org.mapstruct.*;
 import ru.practicum.shareit.booking.BookingMapper;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.item.dto.ItemDto;
@@ -15,7 +12,7 @@ import ru.practicum.shareit.user.model.User;
 
 import java.util.List;
 
-@Mapper(componentModel = "spring", uses = {BookingMapper.class, CommentMapper.class, UserMapper.class})
+@Mapper(componentModel = "spring", uses = {BookingMapper.class, CommentMapper.class, UserMapper.class}, injectionStrategy = InjectionStrategy.CONSTRUCTOR)
 public interface ItemMapper {
     @Mapping(source = "item.id", target = "id")
     @Mapping(source = "lastBooking", target = "lastBooking")

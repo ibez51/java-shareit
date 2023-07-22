@@ -47,26 +47,26 @@ class ShareItTests {
 
     @Test
     void testAddUser() {
-        UserDto userDto = UserDto.builder().name("user").email("user@user.com").build();
+        UserDto userDto = new UserDto().setName("user").setEmail("user@user.com");
         UserDto newUserDto = userController.addUser(userDto);
 
         assertThat(newUserDto.getId()).isNotNull();
 
-        UserDto userDtoEmptyEmail = UserDto.builder().name("user").build();
+        UserDto userDtoEmptyEmail = new UserDto().setName("user");
 
         assertThrows(DataIntegrityViolationException.class, () -> userController.addUser(userDtoEmptyEmail));
 
-        UserDto userDtoDuplicateEmail = UserDto.builder().name("user").email("user@user.com").build();
+        UserDto userDtoDuplicateEmail = new UserDto().setName("user").setEmail("user@user.com");
 
         assertThrows(DataIntegrityViolationException.class, () -> userController.addUser(userDtoDuplicateEmail));
     }
 
     @Test
     void testUpdateUser() {
-        UserDto userDto = UserDto.builder().name("user").email("user@user.com").build();
+        UserDto userDto = new UserDto().setName("user").setEmail("user@user.com");
         userDto = userController.addUser(userDto);
 
-        UserUpdateDto userUpdateDto = UserUpdateDto.builder().name("update").email("update@user.com").build();
+        UserUpdateDto userUpdateDto = new UserUpdateDto().setName("update").setEmail("update@user.com");
         UserDto addedUserDto = userController.updateUser(userDto.getId(), userUpdateDto);
 
         assertEquals("update", addedUserDto.getName());
@@ -75,7 +75,7 @@ class ShareItTests {
 
     @Test
     void testDeleteUser() {
-        UserDto userDto = UserDto.builder().name("user").email("user@user.com").build();
+        UserDto userDto = new UserDto().setName("user").setEmail("user@user.com");
         userDto = userController.addUser(userDto);
 
         assertEquals(1, userController.getAllUsers().size());
@@ -87,7 +87,7 @@ class ShareItTests {
 
     @Test
     void testGetUser() {
-        UserDto userDto = UserDto.builder().name("user").email("user@user.com").build();
+        UserDto userDto = new UserDto().setName("user").setEmail("user@user.com");
         userDto = userController.addUser(userDto);
 
         assertEquals("user", userController.getUser(userDto.getId()).getName());
@@ -96,10 +96,10 @@ class ShareItTests {
 
     @Test
     void testAddItem() {
-        UserDto userDto = UserDto.builder().name("user").email("user@user.com").build();
+        UserDto userDto = new UserDto().setName("user").setEmail("user@user.com");
         userDto = userController.addUser(userDto);
 
-        ItemDto itemDto = ItemDto.builder().name("Дрель").description("Простая дрель").available(true).build();
+        ItemDto itemDto = new ItemDto().setName("Дрель").setDescription("Простая дрель").setAvailable(true);
         ItemDto newItemDto = itemController.addItem(userDto.getId(), itemDto);
 
         assertEquals(itemDto.getName(), newItemDto.getName());
@@ -108,13 +108,13 @@ class ShareItTests {
 
     @Test
     void testUpdateItem() {
-        UserDto userDto = UserDto.builder().name("user").email("user@user.com").build();
+        UserDto userDto = new UserDto().setName("user").setEmail("user@user.com");
         userDto = userController.addUser(userDto);
 
-        ItemDto itemDto = ItemDto.builder().name("Дрель").description("Простая дрель").available(true).build();
+        ItemDto itemDto = new ItemDto().setName("Дрель").setDescription("Простая дрель").setAvailable(true);
         ItemDto newItemDto = itemController.addItem(userDto.getId(), itemDto);
 
-        ItemUpdateDto itemUpdateDto = ItemUpdateDto.builder().name("Дрель+").description("Аккумуляторная дрель").available(false).build();
+        ItemUpdateDto itemUpdateDto = new ItemUpdateDto().setName("Дрель+").setDescription("Аккумуляторная дрель").setAvailable(false);
         itemController.updateItem(newItemDto.getId(), userDto.getId(), itemUpdateDto);
         assertEquals(itemUpdateDto.getName(), itemController.getItem(userDto.getId(), newItemDto.getId()).getName());
         assertEquals(itemUpdateDto.getDescription(), itemController.getItem(userDto.getId(), newItemDto.getId()).getDescription());
@@ -125,16 +125,16 @@ class ShareItTests {
 
     @Test
     void testGetAllItems() {
-        UserDto userDto1 = UserDto.builder().name("user").email("user@user.com").build();
+        UserDto userDto1 = new UserDto().setName("user").setEmail("user@user.com");
         userDto1 = userController.addUser(userDto1);
 
-        UserDto userDto2 = UserDto.builder().name("user").email("user@user2.com").build();
+        UserDto userDto2 = new UserDto().setName("user").setEmail("user@user2.com");
         userDto2 = userController.addUser(userDto2);
 
-        ItemDto itemDto1 = ItemDto.builder().name("Дрель").description("Простая дрель").available(true).build();
+        ItemDto itemDto1 = new ItemDto().setName("Дрель").setDescription("Простая дрель").setAvailable(true);
         itemController.addItem(userDto1.getId(), itemDto1);
 
-        ItemDto itemDto2 = ItemDto.builder().name("Дрель").description("Простая дрель").available(true).build();
+        ItemDto itemDto2 = new ItemDto().setName("Дрель").setDescription("Простая дрель").setAvailable(true);
         itemController.addItem(userDto2.getId(), itemDto2);
 
         assertEquals(1, itemController.getAllItems(userDto1.getId()).size());
@@ -143,19 +143,19 @@ class ShareItTests {
 
     @Test
     void testSearchItems() {
-        UserDto userDto1 = UserDto.builder().name("user").email("user@user.com").build();
+        UserDto userDto1 = new UserDto().setName("user").setEmail("user@user.com");
         userDto1 = userController.addUser(userDto1);
 
-        UserDto userDto2 = UserDto.builder().name("user").email("user@user2.com").build();
+        UserDto userDto2 = new UserDto().setName("user").setEmail("user@user2.com");
         userDto2 = userController.addUser(userDto2);
 
-        ItemDto itemDto1 = ItemDto.builder().name("Дрель").description("Простая дрель").available(true).build();
+        ItemDto itemDto1 = new ItemDto().setName("Дрель").setDescription("Простая дрель").setAvailable(true);
         itemController.addItem(userDto1.getId(), itemDto1);
 
-        ItemDto itemDto2 = ItemDto.builder().name("Дрель").description("Простая дрель").available(true).build();
+        ItemDto itemDto2 = new ItemDto().setName("Дрель").setDescription("Простая дрель").setAvailable(true);
         itemController.addItem(userDto2.getId(), itemDto2);
 
-        ItemDto itemDto3 = ItemDto.builder().name("Др1ель").description("Простая др1ель").available(true).build();
+        ItemDto itemDto3 = new ItemDto().setName("Др1ель").setDescription("Простая др1ель").setAvailable(true);
         itemController.addItem(userDto2.getId(), itemDto3);
 
         assertEquals(2, itemController.searchItems("дРеЛь").size());
@@ -168,25 +168,23 @@ class ShareItTests {
 
     @Test
     public void testComments() throws InterruptedException {
-        UserDto userDto1 = userController.addUser(UserDto.builder()
-                .name("user1")
-                .email("user1@user.com")
-                .build());
+        UserDto userDto1 = userController.addUser(new UserDto()
+                .setName("user1")
+                .setEmail("user1@user.com"));
 
-        UserDto userDto2 = userController.addUser(UserDto.builder()
-                .name("user2")
-                .email("user2@user.com")
-                .build());
+        UserDto userDto2 = userController.addUser(new UserDto()
+                .setName("user2")
+                .setEmail("user2@user.com"));
 
-        ItemDto itemDto1 = itemController.addItem(userDto1.getId(), ItemDto.builder().name("Дрель").description("Простая дрель").available(true).build());
+        ItemDto itemDto1 = itemController.addItem(userDto1.getId(), new ItemDto().setName("Дрель").setDescription("Простая дрель").setAvailable(true));
 
-        BookingIncomingDto bookingIncomingDto = BookingIncomingDto.builder()
-                .itemId(itemDto1.getId())
-                .start(LocalDateTime.now().plusSeconds(2))
-                .end(LocalDateTime.now().plusSeconds(3)).build();
+        BookingIncomingDto bookingIncomingDto = new BookingIncomingDto()
+                .setItemId(itemDto1.getId())
+                .setStart(LocalDateTime.now().plusSeconds(2))
+                .setEnd(LocalDateTime.now().plusSeconds(3));
         BookingDto bookingDto = bookingController.addBooking(userDto2.getId(), bookingIncomingDto);
 
-        CommentCreateDto commentCreateDto = CommentCreateDto.builder().text("Comment for Дрель").build();
+        CommentCreateDto commentCreateDto = new CommentCreateDto().setText("Comment for Дрель");
         assertThrows(CommentCreateNotAllowedException.class, () -> itemController.addComment(userDto2.getId(), itemDto1.getId(), commentCreateDto));
 
         bookingController.approveBooking(userDto1.getId(), bookingDto.getId(), true);
@@ -200,26 +198,26 @@ class ShareItTests {
 
     @Test
     public void testAddBooking() throws InterruptedException {
-        UserDto userDto1 = userController.addUser(UserDto.builder().name("user1").email("user1@user.com").build());
+        UserDto userDto1 = userController.addUser(new UserDto().setName("user1").setEmail("user1@user.com"));
 
-        UserDto userDto2 = userController.addUser(UserDto.builder().name("user2").email("user2@user.com").build());
+        UserDto userDto2 = userController.addUser(new UserDto().setName("user2").setEmail("user2@user.com"));
 
-        ItemDto itemDto1 = itemController.addItem(userDto1.getId(), ItemDto.builder().name("Дрель").description("Простая дрель").available(true).build());
+        ItemDto itemDto1 = itemController.addItem(userDto1.getId(), new ItemDto().setName("Дрель").setDescription("Простая дрель").setAvailable(true));
 
-        BookingIncomingDto bookingIncomingDtoPast = BookingIncomingDto.builder()
-                .itemId(itemDto1.getId())
-                .start(LocalDateTime.now().plusSeconds(2))
-                .end(LocalDateTime.now().plusSeconds(3)).build();
+        BookingIncomingDto bookingIncomingDtoPast = new BookingIncomingDto()
+                .setItemId(itemDto1.getId())
+                .setStart(LocalDateTime.now().plusSeconds(2))
+                .setEnd(LocalDateTime.now().plusSeconds(3));
         BookingDto bookingDto = bookingController.addBooking(userDto2.getId(), bookingIncomingDtoPast);
 
         bookingController.approveBooking(userDto1.getId(), bookingDto.getId(), true);
 
         Thread.sleep(9000);
 
-        BookingIncomingDto bookingIncomingDtoFuture = BookingIncomingDto.builder()
-                .itemId(itemDto1.getId())
-                .start(LocalDateTime.now().plusDays(2))
-                .end(LocalDateTime.now().plusDays(3)).build();
+        BookingIncomingDto bookingIncomingDtoFuture = new BookingIncomingDto()
+                .setItemId(itemDto1.getId())
+                .setStart(LocalDateTime.now().plusDays(2))
+                .setEnd(LocalDateTime.now().plusDays(3));
         bookingDto = bookingController.addBooking(userDto2.getId(), bookingIncomingDtoFuture);
 
         bookingController.approveBooking(userDto1.getId(), bookingDto.getId(), true);
@@ -229,20 +227,20 @@ class ShareItTests {
 
         assertThrows(AccessForChangesDeniedException.class, () -> bookingController.addBooking(userDto1.getId(), bookingIncomingDtoFuture));
 
-        BookingIncomingDto bookingIncomingDtoFail1 = BookingIncomingDto.builder()
-                .itemId(itemDto1.getId())
-                .start(LocalDateTime.now().minusDays(2))
-                .end(LocalDateTime.now().minusDays(1)).build();
+        BookingIncomingDto bookingIncomingDtoFail1 = new BookingIncomingDto()
+                .setItemId(itemDto1.getId())
+                .setStart(LocalDateTime.now().minusDays(2))
+                .setEnd(LocalDateTime.now().minusDays(1));
 
         assertThrows(DateTimeValidationException.class, () -> bookingController.addBooking(userDto2.getId(), bookingIncomingDtoFail1));
 
-        BookingIncomingDto bookingIncomingDtoFail2 = BookingIncomingDto.builder()
-                .itemId(itemDto1.getId())
-                .start(LocalDateTime.now().plusDays(4))
-                .end(LocalDateTime.now().plusDays(3)).build();
+        BookingIncomingDto bookingIncomingDtoFail2 = new BookingIncomingDto()
+                .setItemId(itemDto1.getId())
+                .setStart(LocalDateTime.now().plusDays(4))
+                .setEnd(LocalDateTime.now().plusDays(3));
         assertThrows(DateTimeValidationException.class, () -> bookingController.addBooking(userDto2.getId(), bookingIncomingDtoFail2));
 
-        itemController.updateItem(itemDto1.getId(), userDto1.getId(), ItemUpdateDto.builder().available(false).build());
+        itemController.updateItem(itemDto1.getId(), userDto1.getId(), new ItemUpdateDto().setAvailable(false));
         assertThrows(ItemIsUnavailableException.class, () -> bookingController.addBooking(userDto2.getId(), bookingIncomingDtoFuture));
 
         BookingDto bookingDto1 = bookingController.getBooking(userDto1.getId(), bookingDto.getId());
@@ -251,39 +249,39 @@ class ShareItTests {
 
     @Test
     public void testGetAllBooking() throws InterruptedException {
-        UserDto userDto1 = UserDto.builder().name("user1").email("user1@user.com").build();
+        UserDto userDto1 = new UserDto().setName("user1").setEmail("user1@user.com");
         userDto1 = userController.addUser(userDto1);
 
-        UserDto userDto2 = UserDto.builder().name("user2").email("user2@user.com").build();
+        UserDto userDto2 = new UserDto().setName("user2").setEmail("user2@user.com");
         userDto2 = userController.addUser(userDto2);
 
-        ItemDto itemDto1 = ItemDto.builder().name("Дрель").description("Простая дрель").available(true).build();
+        ItemDto itemDto1 = new ItemDto().setName("Дрель").setDescription("Простая дрель").setAvailable(true);
         itemDto1 = itemController.addItem(userDto1.getId(), itemDto1);
 
-        BookingIncomingDto bookingIncomingDtoPast = BookingIncomingDto.builder()
-                .itemId(itemDto1.getId())
-                .start(LocalDateTime.now().plusSeconds(1))
-                .end(LocalDateTime.now().plusSeconds(2)).build();
+        BookingIncomingDto bookingIncomingDtoPast = new BookingIncomingDto()
+                .setItemId(itemDto1.getId())
+                .setStart(LocalDateTime.now().plusSeconds(1))
+                .setEnd(LocalDateTime.now().plusSeconds(2));
         BookingDto bookingDtoPast = bookingController.addBooking(userDto2.getId(), bookingIncomingDtoPast);
 
         bookingController.approveBooking(userDto1.getId(), bookingDtoPast.getId(), false);
 
         Thread.sleep(3000);
 
-        BookingIncomingDto bookingIncomingDtoCurrent = BookingIncomingDto.builder()
-                .itemId(itemDto1.getId())
-                .start(LocalDateTime.now().plusSeconds(2))
-                .end(LocalDateTime.now().plusDays(1)).build();
+        BookingIncomingDto bookingIncomingDtoCurrent = new BookingIncomingDto()
+                .setItemId(itemDto1.getId())
+                .setStart(LocalDateTime.now().plusSeconds(2))
+                .setEnd(LocalDateTime.now().plusDays(1));
         BookingDto bookingDtoCurrent = bookingController.addBooking(userDto2.getId(), bookingIncomingDtoCurrent);
 
         bookingController.approveBooking(userDto1.getId(), bookingDtoCurrent.getId(), true);
 
         Thread.sleep(3000);
 
-        BookingIncomingDto bookingIncomingDtoFuture = BookingIncomingDto.builder()
-                .itemId(itemDto1.getId())
-                .start(LocalDateTime.now().plusDays(5))
-                .end(LocalDateTime.now().plusDays(6)).build();
+        BookingIncomingDto bookingIncomingDtoFuture = new BookingIncomingDto()
+                .setItemId(itemDto1.getId())
+                .setStart(LocalDateTime.now().plusDays(5))
+                .setEnd(LocalDateTime.now().plusDays(6));
         bookingController.addBooking(userDto2.getId(), bookingIncomingDtoFuture);
 
         assertEquals(3, bookingController.getAllBooking(userDto2.getId(), BookingFilterState.ALL.name()).size());
@@ -296,38 +294,38 @@ class ShareItTests {
 
     @Test
     public void testGetAllBookingByOwner() throws InterruptedException {
-        UserDto userDto1 = UserDto.builder().name("user1").email("user1@user.com").build();
+        UserDto userDto1 = new UserDto().setName("user1").setEmail("user1@user.com");
         userDto1 = userController.addUser(userDto1);
 
-        UserDto userDto2 = userController.addUser(UserDto.builder().name("user2").email("user2@user.com").build());
+        UserDto userDto2 = userController.addUser(new UserDto().setName("user2").setEmail("user2@user.com"));
 
-        ItemDto itemDto1 = ItemDto.builder().name("Дрель").description("Простая дрель").available(true).build();
+        ItemDto itemDto1 = new ItemDto().setName("Дрель").setDescription("Простая дрель").setAvailable(true);
         itemDto1 = itemController.addItem(userDto1.getId(), itemDto1);
 
-        BookingIncomingDto bookingIncomingDtoPast = BookingIncomingDto.builder()
-                .itemId(itemDto1.getId())
-                .start(LocalDateTime.now().plusSeconds(1))
-                .end(LocalDateTime.now().plusSeconds(2)).build();
+        BookingIncomingDto bookingIncomingDtoPast = new BookingIncomingDto()
+                .setItemId(itemDto1.getId())
+                .setStart(LocalDateTime.now().plusSeconds(1))
+                .setEnd(LocalDateTime.now().plusSeconds(2));
         BookingDto bookingDtoPast = bookingController.addBooking(userDto2.getId(), bookingIncomingDtoPast);
 
         bookingController.approveBooking(userDto1.getId(), bookingDtoPast.getId(), false);
 
         Thread.sleep(3000);
 
-        BookingIncomingDto bookingIncomingDtoCurrent = BookingIncomingDto.builder()
-                .itemId(itemDto1.getId())
-                .start(LocalDateTime.now().plusSeconds(2))
-                .end(LocalDateTime.now().plusDays(1)).build();
+        BookingIncomingDto bookingIncomingDtoCurrent = new BookingIncomingDto()
+                .setItemId(itemDto1.getId())
+                .setStart(LocalDateTime.now().plusSeconds(2))
+                .setEnd(LocalDateTime.now().plusDays(1));
         BookingDto bookingDtoCurrent = bookingController.addBooking(userDto2.getId(), bookingIncomingDtoCurrent);
 
         Thread.sleep(3000);
 
         bookingController.approveBooking(userDto1.getId(), bookingDtoCurrent.getId(), true);
 
-        BookingIncomingDto bookingIncomingDtoFuture = BookingIncomingDto.builder()
-                .itemId(itemDto1.getId())
-                .start(LocalDateTime.now().plusDays(5))
-                .end(LocalDateTime.now().plusDays(6)).build();
+        BookingIncomingDto bookingIncomingDtoFuture = new BookingIncomingDto()
+                .setItemId(itemDto1.getId())
+                .setStart(LocalDateTime.now().plusDays(5))
+                .setEnd(LocalDateTime.now().plusDays(6));
         bookingController.addBooking(userDto2.getId(), bookingIncomingDtoFuture);
 
         assertEquals(3, bookingController.getAllBookingByOwner(userDto1.getId(), BookingFilterState.ALL.name()).size());
@@ -342,18 +340,18 @@ class ShareItTests {
 
     @Test
     public void getBooking() {
-        UserDto userDto1 = UserDto.builder().name("user1").email("user1@user.com").build();
+        UserDto userDto1 = new UserDto().setName("user1").setEmail("user1@user.com");
         userDto1 = userController.addUser(userDto1);
 
-        UserDto userDto2 = userController.addUser(UserDto.builder().name("user2").email("user2@user.com").build());
+        UserDto userDto2 = userController.addUser(new UserDto().setName("user2").setEmail("user2@user.com"));
 
-        ItemDto itemDto1 = ItemDto.builder().name("Дрель").description("Простая дрель").available(true).build();
+        ItemDto itemDto1 = new ItemDto().setName("Дрель").setDescription("Простая дрель").setAvailable(true);
         itemDto1 = itemController.addItem(userDto1.getId(), itemDto1);
 
-        BookingIncomingDto bookingIncomingDtoPast = BookingIncomingDto.builder()
-                .itemId(itemDto1.getId())
-                .start(LocalDateTime.now().plusSeconds(1))
-                .end(LocalDateTime.now().plusSeconds(2)).build();
+        BookingIncomingDto bookingIncomingDtoPast = new BookingIncomingDto()
+                .setItemId(itemDto1.getId())
+                .setStart(LocalDateTime.now().plusSeconds(1))
+                .setEnd(LocalDateTime.now().plusSeconds(2));
         BookingDto bookingDtoPast = bookingController.addBooking(userDto2.getId(), bookingIncomingDtoPast);
 
         bookingController.approveBooking(userDto1.getId(), bookingDtoPast.getId(), false);

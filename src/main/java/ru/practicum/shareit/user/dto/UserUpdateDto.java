@@ -1,12 +1,12 @@
 package ru.practicum.shareit.user.dto;
 
-import lombok.Builder;
 import lombok.Data;
+import lombok.experimental.Accessors;
 
 import javax.validation.constraints.Email;
 
 @Data
-@Builder
+@Accessors(chain = true)
 public class UserUpdateDto {
     private String name;
     @Email(message = "Поле email не соответствует формату")
