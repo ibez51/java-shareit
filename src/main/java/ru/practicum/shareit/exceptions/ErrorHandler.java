@@ -15,22 +15,6 @@ import java.io.StringWriter;
 @RestControllerAdvice
 public class ErrorHandler {
     @ExceptionHandler
-    @ResponseStatus(HttpStatus.CONFLICT)
-    public ErrorResponse handleUserValidationConflictError(final UserValidationConflictException ex) {
-        log.warn("Got 409 status {}", ex.getMessage());
-
-        return new ErrorResponse(ex.getMessage());
-    }
-
-    @ExceptionHandler
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse handleUserValidationError(final UserValidationException ex) {
-        log.warn("Got 400 status {}", ex.getMessage());
-
-        return new ErrorResponse(ex.getMessage());
-    }
-
-    @ExceptionHandler
     @ResponseStatus(HttpStatus.FORBIDDEN)
     public ErrorResponse handleItemOwnerConflictError(final ItemOwnerConflictException ex) {
         log.warn("Got 403 status {}", ex.getMessage());
@@ -65,4 +49,53 @@ public class ErrorHandler {
 
         return new ErrorResponse(ex.getMessage());
     }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleItemIsUnavailableError(final ItemIsUnavailableException ex) {
+        log.warn("Got 400 status {}", ex.getMessage());
+
+        return new ErrorResponse(ex.getMessage());
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleDateTimeValidationError(final DateTimeValidationException ex) {
+        log.warn("Got 400 status {}", ex.getMessage());
+
+        return new ErrorResponse(ex.getMessage());
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ErrorResponse handleAccessDeniedError(final AccessForChangesDeniedException ex) {
+        log.warn("Got 404 status {}", ex.getMessage());
+
+        return new ErrorResponse(ex.getMessage());
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public ErrorResponse handleIllegalBookingFilterStatusError(final IllegalBookingFilterStatusException ex) {
+        log.warn("Got 500 status {}", ex.getMessage());
+
+        return new ErrorResponse(ex.getMessage());
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleBookingUpdateNotAllowedError(final BookingUpdateNotAllowedException ex) {
+        log.warn("Got 400 status {}", ex.getMessage());
+
+        return new ErrorResponse(ex.getMessage());
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleCommentCreateNotAllowedError(final CommentCreateNotAllowedException ex) {
+        log.warn("Got 400 status {}", ex.getMessage());
+
+        return new ErrorResponse(ex.getMessage());
+    }
+
 }

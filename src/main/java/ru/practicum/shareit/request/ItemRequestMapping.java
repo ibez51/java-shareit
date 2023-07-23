@@ -1,27 +1,13 @@
 package ru.practicum.shareit.request;
 
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
+import org.mapstruct.InjectionStrategy;
+import org.mapstruct.Mapper;
 import ru.practicum.shareit.request.dto.ItemRequestDto;
 import ru.practicum.shareit.request.model.ItemRequest;
 
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
-public class ItemRequestMapping {
-    public static ItemRequestDto itemRequestToItemRequestDto(ItemRequest itemRequest) {
-        return ItemRequestDto.builder()
-                .id(itemRequest.getId())
-                .description(itemRequest.getDescription())
-                .requestorId(itemRequest.getRequestorId())
-                .created(itemRequest.getCreated())
-                .build();
-    }
+@Mapper(componentModel = "spring", injectionStrategy = InjectionStrategy.CONSTRUCTOR)
+public interface ItemRequestMapping {
+    ItemRequestDto toDto(ItemRequest itemRequest);
 
-    public static ItemRequest itemRequestDtoToItemRequest(ItemRequestDto itemRequestDto) {
-        return ItemRequest.builder()
-                .id(itemRequestDto.getId())
-                .description(itemRequestDto.getDescription())
-                .requestorId(itemRequestDto.getRequestorId())
-                .created(itemRequestDto.getCreated())
-                .build();
-    }
+    ItemRequest toItemRequest(ItemRequestDto itemRequestDto);
 }

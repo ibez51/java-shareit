@@ -4,29 +4,29 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
+import org.hibernate.annotations.CreationTimestamp;
 import ru.practicum.shareit.user.model.User;
 
 import javax.persistence.*;
+import java.time.LocalDateTime;
 
 @NoArgsConstructor
 @Getter
 @Setter
 @Accessors(chain = true)
 @Entity
-@Table(name = "items")
-public class Item {
+@Table(name = "comments")
+public class Comment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
-    @Column(nullable = false, length = 100)
-    private String name;
-    @Column(nullable = false, length = 1000)
-    private String description;
-    @Column(name = "is_available", nullable = false)
-    private Boolean available;
+    private String text;
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "owner_id")
-    private User owner;
-    @Column(name = "request_id")
-    private int requestId;
+    @JoinColumn(name = "item_Id")
+    private Item item;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "author_id")
+    private User author;
+    @CreationTimestamp
+    private LocalDateTime created;
 }

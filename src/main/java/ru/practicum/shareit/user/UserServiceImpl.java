@@ -3,85 +3,59 @@ package ru.practicum.shareit.user;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import ru.practicum.shareit.exceptions.UserValidationConflictException;
-import ru.practicum.shareit.exceptions.UserValidationException;
-import ru.practicum.shareit.item.ItemRepository;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.user.dto.UserDto;
+import ru.practicum.shareit.user.dto.UserUpdateDto;
 import ru.practicum.shareit.user.model.User;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
-    private final ItemRepository itemRepository;
+    private final UserMapper userMapper;
 
     @Override
     public List<UserDto> getAllUsers() {
-        return userRepository.getAllUsers().stream()
-                .map(UserMapper::userToUserDto)
+        return userRepository.findAll().stream()
+                .map(userMapper::toDto)
                 .collect(Collectors.toList());
     }
 
     @Override
-    public UserDto getUser(Integer userId) {
-        User user = userRepository.getUser(userId);
-        if (Objects.isNull(user)) {
-            throw new NullPointerException("Пользователь с Id " + userId + " не найден.");
-        }
-
-        return UserMapper.userToUserDto(user);
+    public UserDto getUserDto(Integer userId) {
+        return userMapper.toDto(getUser(userId));
     }
 
     @Override
+    @Transactional
     public UserDto addUser(UserDto userDto) {
-        User user = UserMapper.userDtoToUser(userDto);
-
-        validateUserEmail(user.getEmail(), user.getId());
-
-        Integer userId = userRepository.addUser(user);
-
-        return UserMapper.userToUserDto(userRepository.getUser(userId));
+        return userMapper.toDto(userRepository.save(userMapper.toUser(userDto)));
     }
 
     @Override
+    @Transactional
     public UserDto updateUser(Integer userId,
-                              UserDto userDto) {
-        User user;
+                              UserUpdateDto userUpdateDto) {
+        User user = getUser(userId);
 
-        if (Objects.nonNull(userDto.getEmail())) {
-            validateUserEmail(userDto.getEmail(), userId);
-        }
+        userMapper.updateUser(userUpdateDto, user);
 
-        user = userRepository.getUser(userId);
-
-        if (Objects.nonNull(userDto.getName())) {
-            user.setName(userDto.getName());
-        }
-        if (Objects.nonNull(userDto.getEmail())) {
-            user.setEmail(userDto.getEmail());
-        }
-
-        return UserMapper.userToUserDto(userRepository.updateUser(user));
+        return userMapper.toDto(userRepository.save(user));
     }
 
     @Override
+    @Transactional
     public void deleteUser(Integer userId) {
-        itemRepository.deleteItemsByUser(userId);
-
-        userRepository.deleteUser(userId);
+        userRepository.deleteById(userId);
     }
 
-    private void validateUserEmail(String email, Integer userIdExclude) {
-        if (Objects.isNull(email)) {
-            throw new UserValidationException("Поле email должно быть заполнено");
-        }
-
-        if (userRepository.isEmailInUse(email, userIdExclude)) {
-            throw new UserValidationConflictException("Пользователь с email " + email + " уже существует.");
-        }
+    @Override
+    public User getUser(Integer userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new NullPointerException("Пользователь с Id " + userId + " не найден."));
     }
 }
