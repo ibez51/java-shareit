@@ -9,17 +9,19 @@ import ru.practicum.shareit.item.model.Item;
 import java.util.List;
 
 public interface ItemService {
-    List<ItemDto> getAllItems(Integer userId);
+    List<ItemDto> getAllItems(Integer userId, Integer from, Integer size);
 
     ItemDto getItemDto(Integer userId, Integer itemId);
 
     Item getItem(Integer itemId);
 
-    List<ItemDto> searchItems(String text);
+    List<ItemDto> searchItems(String text, Integer from, Integer size);
 
     ItemDto addItem(Integer userId, ItemDto itemDto);
 
     CommentOutputDto addComment(Integer userId, Integer itemId, CommentCreateDto commentCreateDto);
 
     ItemDto updateItem(Integer itemId, Integer userId, ItemUpdateDto itemUpdateDto);
+
+    List<Item> getItemsByRequestIds(List<Integer> itemRequestIds);
 }

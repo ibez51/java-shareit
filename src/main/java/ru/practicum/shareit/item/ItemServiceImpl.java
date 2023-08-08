@@ -1,6 +1,7 @@
 package ru.practicum.shareit.item;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.booking.BookingRepository;
@@ -34,8 +35,12 @@ public class ItemServiceImpl implements ItemService {
     private static final Set<String> BAD_BOOKING_STATUS_SET = Set.of(BookingStatus.REJECTED.name(), BookingStatus.CANCELED.name());
 
     @Override
-    public List<ItemDto> getAllItems(Integer userId) {
-        List<Item> itemList = itemRepository.findByOwnerId(userId);
+    public List<ItemDto> getAllItems(Integer userId,
+                                     Integer from,
+                                     Integer size) {
+        PageRequest page = PageRequest.of(from > 0 ? from / size : 0, size);
+        List<Item> itemList = itemRepository.findByOwnerIdOrderByIdAsc(userId, page).getContent();
+
         Map<Integer, Item> itemMap = itemList.stream()
                 .collect(Collectors.toMap(Item::getId, Function.identity()));
 
@@ -51,6 +56,7 @@ public class ItemServiceImpl implements ItemService {
 
         return itemList.stream()
                 .map(x -> itemMapper.toDto(x, lastBookingMap.get(x.getId()), nextBookingMap.get(x.getId())))
+                .sorted(Comparator.comparingInt(ItemDto::getId))
                 .collect(Collectors.toList());
     }
 
@@ -79,13 +85,17 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public List<ItemDto> searchItems(String text) {
+    public List<ItemDto> searchItems(String text,
+                                     Integer from,
+                                     Integer size) {
         if (Objects.isNull(text)
                 || text.isBlank()) {
             return Collections.emptyList();
         }
 
-        return itemRepository.findItemsByAvailabilityAndNameOrDesc(text).stream()
+        PageRequest page = PageRequest.of(from > 0 ? from / size : 0, size);
+
+        return itemRepository.findItemsByAvailabilityAndNameOrDesc(text, page).stream()
                 .map(itemMapper::toDto)
                 .collect(Collectors.toList());
     }
@@ -137,5 +147,10 @@ public class ItemServiceImpl implements ItemService {
     public Item getItem(Integer itemId) {
         return itemRepository.findById(itemId)
                 .orElseThrow(() -> new NullPointerException("Предмет с Id " + itemId + " не найден."));
+    }
+
+    @Override
+    public List<Item> getItemsByRequestIds(List<Integer> itemRequestIds) {
+        return itemRepository.findByRequestIdIn(itemRequestIds);
     }
 }

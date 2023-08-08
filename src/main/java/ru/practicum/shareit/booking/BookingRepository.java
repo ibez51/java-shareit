@@ -1,5 +1,7 @@
 package ru.practicum.shareit.booking;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -13,35 +15,43 @@ import java.util.Set;
 
 @Repository
 public interface BookingRepository extends JpaRepository<Booking, Integer> {
-    List<Booking> findByBookerIdOrderByStartDesc(Integer userId);
+    Page<Booking> findByBookerIdOrderByStartDesc(Integer userId, Pageable page);
 
-    List<Booking> findByBookerIdAndStartIsAfterOrderByStartDesc(Integer userId,
-                                                                LocalDateTime dateTimeNow);
+    Page<Booking> findByBookerIdAndStartIsAfterOrderByStartDesc(Integer userId,
+                                                                LocalDateTime dateTimeNow,
+                                                                Pageable page);
 
-    List<Booking> findByItemOwnerIdOrderByStartDesc(Integer userId);
+    Page<Booking> findByItemOwnerIdOrderByStartDesc(Integer userId, Pageable page);
 
-    List<Booking> findByItemOwnerIdAndStartIsAfterOrderByStartDesc(Integer userId,
-                                                                   LocalDateTime dateTimeNow);
+    Page<Booking> findByItemOwnerIdAndStartIsAfterOrderByStartDesc(Integer userId,
+                                                                   LocalDateTime dateTimeNow,
+                                                                   Pageable page);
 
-    List<Booking> findByItemOwnerIdAndEndIsBeforeOrderByStartDesc(Integer userId,
-                                                                  LocalDateTime dateTimeNow);
+    Page<Booking> findByItemOwnerIdAndEndIsBeforeOrderByStartDesc(Integer userId,
+                                                                  LocalDateTime dateTimeNow,
+                                                                  Pageable page);
 
-    List<Booking> findByItemOwnerIdAndStartIsBeforeAndEndIsAfterOrderByEndDesc(Integer userId,
+    Page<Booking> findByItemOwnerIdAndStartIsBeforeAndEndIsAfterOrderByEndDesc(Integer userId,
                                                                                LocalDateTime dateTimeNow,
-                                                                               LocalDateTime localDateTimeRightNow);
+                                                                               LocalDateTime localDateTimeRightNow,
+                                                                               Pageable page);
 
-    List<Booking> findByItemOwnerIdAndStatusOrderByStartDesc(Integer userId,
-                                                             BookingStatus status);
+    Page<Booking> findByItemOwnerIdAndStatusOrderByStartDesc(Integer userId,
+                                                             BookingStatus status,
+                                                             Pageable page);
 
-    List<Booking> findByBookerIdAndEndIsBeforeOrderByStartDesc(Integer userId,
-                                                               LocalDateTime dateTimeNow);
+    Page<Booking> findByBookerIdAndEndIsBeforeOrderByStartDesc(Integer userId,
+                                                               LocalDateTime dateTimeNow,
+                                                               Pageable page);
 
-    List<Booking> findByBookerIdAndStartIsBeforeAndEndIsAfterOrderByEndDesc(Integer userId,
+    Page<Booking> findByBookerIdAndStartIsBeforeAndEndIsAfterOrderByEndDesc(Integer userId,
                                                                             LocalDateTime dateTimeNow,
-                                                                            LocalDateTime localDateTimeRightNow);
+                                                                            LocalDateTime localDateTimeRightNow,
+                                                                            Pageable page);
 
-    List<Booking> findByBookerIdAndStatusOrderByStartDesc(Integer userId,
-                                                          BookingStatus status);
+    Page<Booking> findByBookerIdAndStatusOrderByStartDesc(Integer userId,
+                                                          BookingStatus status,
+                                                          Pageable page);
 
     @Query(value = "WITH cte AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY ITEM_ID ORDER BY START_DATE DESC) AS rn FROM Bookings b " +
             "WHERE b.ITEM_ID IN :items AND status NOT IN :statusExclude AND START_DATE < :dateTimeNow)" +
