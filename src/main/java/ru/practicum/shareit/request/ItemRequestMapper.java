@@ -13,9 +13,6 @@ import java.util.List;
 
 @Mapper(componentModel = "spring", injectionStrategy = InjectionStrategy.CONSTRUCTOR)
 public interface ItemRequestMapper {
-    @Mapping(source = "itemRequest.id", target = "id")
-    ItemRequestCreateDto toDto(ItemRequest itemRequest, User user);
-
     @Mapping(target = "id", ignore = true)
     @Mapping(source = "user", target = "requestor")
     ItemRequest toItemRequest(ItemRequestCreateDto itemRequestCreateDto, User user);
