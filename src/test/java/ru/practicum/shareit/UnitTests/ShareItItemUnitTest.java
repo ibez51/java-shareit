@@ -1,5 +1,6 @@
 package ru.practicum.shareit.UnitTests;
 
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -22,6 +23,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.*;
 
+@DisplayName("Предметы. Unit тесты")
 @ExtendWith(MockitoExtension.class)
 class ShareItItemUnitTest {
     @InjectMocks
@@ -34,11 +36,13 @@ class ShareItItemUnitTest {
     private final CommentMapper commentMapperMock = mock(CommentMapper.class);
 
     @Test
+    @DisplayName("Поиск предмета по шаблону с пустым шаблоном")
     public void testSearchItemsEmpty() {
         assertEquals(0, itemService.searchItems("", 0, 10).size());
     }
 
     @Test
+    @DisplayName("Ошибка создания комментария от пользователя, не бронировавшего предмет")
     public void testAddCommentError() {
         itemService = new ItemServiceImpl(itemRepositoryMock, commentRepositoryMock, bookingRepositoryMock, userServiceMock, itemMapperMock, commentMapperMock);
 
@@ -49,7 +53,8 @@ class ShareItItemUnitTest {
     }
 
     @Test
-    public void testGetUserNotFoundError() {
+    @DisplayName("Ошибка поиска не существующего предмета по Id")
+    public void testGetItemNotFoundError() {
         itemService = new ItemServiceImpl(itemRepositoryMock, commentRepositoryMock, bookingRepositoryMock, userServiceMock, itemMapperMock, commentMapperMock);
 
         doReturn(Optional.empty())

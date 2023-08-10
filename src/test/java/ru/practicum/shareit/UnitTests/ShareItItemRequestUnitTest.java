@@ -1,5 +1,6 @@
 package ru.practicum.shareit.UnitTests;
 
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -15,12 +16,14 @@ import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 
+@DisplayName("Запрос на предмет. Unit тесты")
 @ExtendWith(MockitoExtension.class)
 class ShareItItemRequestUnitTest {
     @InjectMocks
     private ItemRequestServiceImpl itemRequestService;
 
     @Test
+    @DisplayName("Ошибка Пользователь не найден")
     public void testGetUserNotFoundError() {
         UserService userService = mock(UserService.class);
 

@@ -1,6 +1,7 @@
 package ru.practicum.shareit.RESTTests;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -26,6 +27,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+@DisplayName("Бронирование. Тесты контроллера")
 @WebMvcTest(controllers = BookingController.class)
 class RESTBookingTest {
     @Autowired
@@ -42,6 +44,7 @@ class RESTBookingTest {
             .setStatus(BookingStatus.WAITING);
 
     @Test
+    @DisplayName("Список всех бронирований")
     public void testGetAllBooking() throws Exception {
         doReturn(List.of(bookingDto))
                 .when(bookingService)
@@ -67,6 +70,7 @@ class RESTBookingTest {
     }
 
     @Test
+    @DisplayName("Список всех бронирований по вледельцу")
     public void testGetAllBookingByOwner() throws Exception {
         doReturn(List.of(bookingDto))
                 .when(bookingService)
@@ -83,6 +87,7 @@ class RESTBookingTest {
     }
 
     @Test
+    @DisplayName("Бронирование по Id")
     public void testGetBooking() throws Exception {
         doReturn(bookingDto)
                 .when(bookingService)
@@ -99,6 +104,7 @@ class RESTBookingTest {
     }
 
     @Test
+    @DisplayName("Создание бронирования")
     public void testAddBooking() throws Exception {
         doReturn(bookingDto)
                 .when(bookingService)
@@ -161,6 +167,7 @@ class RESTBookingTest {
     }
 
     @Test
+    @DisplayName("Подтверждение бронирования")
     public void testApproveBooking() throws Exception {
         doReturn(bookingDto)
                 .when(bookingService)

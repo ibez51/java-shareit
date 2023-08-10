@@ -1,6 +1,7 @@
 package ru.practicum.shareit.RESTTests;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -29,6 +30,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+@DisplayName("Предметы. Тесты контроллера")
 @WebMvcTest(controllers = ItemController.class)
 class RESTItemTest {
     @Autowired
@@ -46,6 +48,7 @@ class RESTItemTest {
             .setRequestId(1);
 
     @Test
+    @DisplayName("Список всех предметов")
     public void testGetAllItems() throws Exception {
         doReturn(List.of(itemDto))
                 .when(itemService)
@@ -68,10 +71,11 @@ class RESTItemTest {
                         .param("size", "10")
                         .accept(MediaType.ALL_VALUE)
                         .header("X-Sharer-User-Id", 1))
-                .andExpect(status().isInternalServerError());
+                .andExpect(status().isBadRequest());
     }
 
     @Test
+    @DisplayName("Поиск предмета по Id")
     public void testGetItem() throws Exception {
         doReturn(itemDto)
                 .when(itemService)
@@ -89,6 +93,7 @@ class RESTItemTest {
     }
 
     @Test
+    @DisplayName("Поиск предмета по шаблону")
     public void testSearchItems() throws Exception {
         doReturn(List.of(itemDto))
                 .when(itemService)
@@ -112,6 +117,7 @@ class RESTItemTest {
     }
 
     @Test
+    @DisplayName("Создание предмета")
     public void testAddItem() throws Exception {
         doReturn(itemDto)
                 .when(itemService)
@@ -140,6 +146,7 @@ class RESTItemTest {
     }
 
     @Test
+    @DisplayName("Создание комментария")
     public void testAddComment() throws Exception {
         CommentOutputDto commentOutputDto = new CommentOutputDto();
         commentOutputDto.setText("Comment text");
@@ -175,6 +182,7 @@ class RESTItemTest {
     }
 
     @Test
+    @DisplayName("Обновление предмета")
     public void testUpdateItem() throws Exception {
         doReturn(itemDto)
                 .when(itemService)

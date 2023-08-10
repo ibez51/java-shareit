@@ -1,5 +1,6 @@
 package ru.practicum.shareit.JSONTests;
 
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.json.JsonTest;
@@ -12,12 +13,14 @@ import java.time.format.DateTimeFormatter;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@DisplayName("Комментарии в предметах. Тесты DTO Json")
 @JsonTest
 class JSONCommentOutputDtoTest {
     @Autowired
     private JacksonTester<CommentOutputDto> jsonCommentOutputDto;
 
     @Test
+    @DisplayName("CommentOutputDto")
     void testCommentOutputDto() throws Exception {
         LocalDateTime dateTime = LocalDateTime.now();
         CommentOutputDto commentOutputDto = new CommentOutputDto();

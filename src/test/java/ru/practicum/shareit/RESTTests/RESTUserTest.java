@@ -1,6 +1,7 @@
 package ru.practicum.shareit.RESTTests;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -20,6 +21,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+@DisplayName("Пользователи. Тесты контроллера")
 @WebMvcTest(controllers = UserController.class)
 class RESTUserTest {
     @Autowired
@@ -31,6 +33,7 @@ class RESTUserTest {
     private final UserDto userDto = new UserDto().setId(1).setName("John").setEmail("john.doe@mail.com");
 
     @Test
+    @DisplayName("Список всех пользователей")
     public void testGetAllUsers() throws Exception {
         doReturn(List.of(userDto))
                 .when(userService)
@@ -45,6 +48,7 @@ class RESTUserTest {
     }
 
     @Test
+    @DisplayName("Поиск пользователя по Id")
     public void testGetUser() throws Exception {
         doReturn(userDto)
                 .when(userService)
@@ -67,6 +71,7 @@ class RESTUserTest {
     }
 
     @Test
+    @DisplayName("Создание пользователя")
     public void testAddUser() throws Exception {
         doReturn(userDto)
                 .when(userService)
@@ -90,6 +95,7 @@ class RESTUserTest {
     }
 
     @Test
+    @DisplayName("Обновление пользователя")
     public void testUpdateUser() throws Exception {
         UserUpdateDto userUpdateDto = new UserUpdateDto().setName("newName").setEmail("newEmail@email.email");
         doReturn(userDto)
@@ -107,6 +113,7 @@ class RESTUserTest {
     }
 
     @Test
+    @DisplayName("Удаление пользователя")
     public void testDeleteUser() throws Exception {
         doNothing()
                 .when(userService)
@@ -118,6 +125,7 @@ class RESTUserTest {
     }
 
     @Test
+    @DisplayName("Некорректный URL")
     public void testWrongURL() throws Exception {
         mvc.perform(delete("/users/dummy", 1)
                         .accept(MediaType.ALL_VALUE))

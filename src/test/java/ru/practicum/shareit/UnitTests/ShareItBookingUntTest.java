@@ -1,5 +1,6 @@
 package ru.practicum.shareit.UnitTests;
 
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -18,6 +19,7 @@ import java.time.LocalDateTime;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.*;
 
+@DisplayName("Бронирование. Unit тесты")
 @ExtendWith(MockitoExtension.class)
 class ShareItBookingUntTest {
     @InjectMocks
@@ -28,6 +30,7 @@ class ShareItBookingUntTest {
     private final BookingMapper bookingMapper = mock(BookingMapper.class);
 
     @Test
+    @DisplayName("Список всех бронирований")
     public void testGetAllBooking() {
         bookingService = new BookingServiceImpl(bookingRepository, itemService, userService, bookingMapper);
 
@@ -71,6 +74,7 @@ class ShareItBookingUntTest {
     }
 
     @Test
+    @DisplayName("Список всех бронирований по владельцу")
     public void testGetAllBookingByOwner() {
         bookingService = new BookingServiceImpl(bookingRepository, itemService, userService, bookingMapper);
 

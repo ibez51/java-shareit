@@ -1,6 +1,7 @@
 package ru.practicum.shareit.RESTTests;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -28,6 +29,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+@DisplayName("Запрос предмета. Тест контроллера")
 @WebMvcTest(controllers = ItemRequestController.class)
 class RESTItemRequestTest {
     @Autowired
@@ -44,6 +46,7 @@ class RESTItemRequestTest {
                     new ItemDto().setId(2).setDescription("Item2 description").setName("Item2 name")));
 
     @Test
+    @DisplayName("Список запросов на предмет")
     public void testGetItemRequests() throws Exception {
         doReturn(List.of(itemRequestOutputDto))
                 .when(itemRequestService)
@@ -69,6 +72,7 @@ class RESTItemRequestTest {
     }
 
     @Test
+    @DisplayName("Поиск запроса на бронирование по Id")
     public void testGetItemRequest() throws Exception {
         doReturn(itemRequestOutputDto)
                 .when(itemRequestService)
@@ -86,6 +90,7 @@ class RESTItemRequestTest {
 
 
     @Test
+    @DisplayName("Список всех запросов на предмет")
     public void testGetAllItemRequests() throws Exception {
         doReturn(List.of(itemRequestOutputDto))
                 .when(itemRequestService)
@@ -107,10 +112,11 @@ class RESTItemRequestTest {
                         .param("size", "10")
                         .accept(MediaType.ALL_VALUE)
                         .header("X-Sharer-User-Id", 1))
-                .andExpect(status().isInternalServerError());
+                .andExpect(status().isBadRequest());
     }
 
     @Test
+    @DisplayName("Создать запрос на предмет")
     public void testAddItemRequests() throws Exception {
         doReturn(itemRequestOutputDto)
                 .when(itemRequestService)

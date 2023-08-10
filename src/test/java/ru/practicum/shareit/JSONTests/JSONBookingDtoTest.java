@@ -1,5 +1,6 @@
 package ru.practicum.shareit.JSONTests;
 
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.json.JsonTest;
@@ -15,12 +16,14 @@ import java.time.format.DateTimeFormatter;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@DisplayName("Бронирование. Тесты DTO Json")
 @JsonTest
 class JSONBookingDtoTest {
     @Autowired
     private JacksonTester<BookingDto> jsonBookingDto;
 
     @Test
+    @DisplayName("BookingDto")
     void testBookingDto() throws Exception {
         ItemDto itemDto = new ItemDto().setId(1);
         UserDto userDto = new UserDto().setId(2);

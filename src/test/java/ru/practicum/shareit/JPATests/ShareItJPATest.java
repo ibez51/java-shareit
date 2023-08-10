@@ -1,6 +1,8 @@
 package ru.practicum.shareit.JPATests;
 
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
@@ -19,6 +21,7 @@ import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@DisplayName("Тесты сложных запросов к БД")
 @DataJpaTest
 class ShareItJPATest {
     @Autowired
@@ -27,6 +30,20 @@ class ShareItJPATest {
     private ItemRepository itemRepository;
     @Autowired
     private BookingRepository bookingRepository;
+    private User user1;
+    private User user2;
+    private Item item1;
+
+    @BeforeEach
+    void setUp() {
+        user1 = entityManager.persist(new User().setName("User name1").setEmail("email@user.f1"));
+        user2 = entityManager.persist(new User().setName("User name2").setEmail("email@user.f2"));
+        item1 = itemRepository.save(new Item()
+                .setName("Дрель")
+                .setDescription("Простая дрель")
+                .setAvailable(true)
+                .setOwner(user1));
+    }
 
     @Test
     public void contextLoads() {
@@ -34,36 +51,14 @@ class ShareItJPATest {
     }
 
     @Test
+    @DisplayName("Сгенерировать Id предмета")
     void testPersistItemId() {
-        User user = new User().setName("User name").setEmail("email@user.f");
-        entityManager.persist(user);
-
-        Item item = new Item()
-                .setName("Item name")
-                .setDescription("Item description")
-                .setAvailable(true)
-                .setOwner(user);
-
-        assertEquals(0, item.getId());
-        entityManager.persist(item);
-        Assertions.assertNotNull(item.getId());
+        Assertions.assertNotNull(item1.getId());
     }
 
     @Test
+    @DisplayName("Поиск предмета по шаблону")
     void testSearchItems() {
-        User user1 = new User().setName("User name1").setEmail("email@user.f1");
-        entityManager.persist(user1);
-
-        User user2 = new User().setName("User name2").setEmail("email@user.f2");
-        entityManager.persist(user2);
-
-        Item item1 = new Item()
-                .setName("Дрель")
-                .setDescription("Простая дрель")
-                .setAvailable(true)
-                .setOwner(user1);
-        itemRepository.save(item1);
-
         Item item2 = new Item()
                 .setName("Дрель")
                 .setDescription("Простая дрель")
@@ -84,20 +79,8 @@ class ShareItJPATest {
     }
 
     @Test
+    @DisplayName("Поиск последнего бронирования")
     public void testFindLastBooking() throws InterruptedException {
-        User user1 = new User().setName("User name1").setEmail("email@user.f1");
-        entityManager.persist(user1);
-
-        User user2 = new User().setName("User name2").setEmail("email@user.f2");
-        entityManager.persist(user2);
-
-        Item item1 = new Item()
-                .setName("Дрель")
-                .setDescription("Простая дрель")
-                .setAvailable(true)
-                .setOwner(user1);
-        itemRepository.save(item1);
-
         Booking bookingPast = new Booking()
                 .setStart(LocalDateTime.now().plusSeconds(1))
                 .setEnd(LocalDateTime.now().plusSeconds(2))
@@ -136,20 +119,8 @@ class ShareItJPATest {
     }
 
     @Test
+    @DisplayName("Поиск следующего бронирования")
     public void testFindNextBooking() throws InterruptedException {
-        User user1 = new User().setName("User name1").setEmail("email@user.f1");
-        entityManager.persist(user1);
-
-        User user2 = new User().setName("User name2").setEmail("email@user.f2");
-        entityManager.persist(user2);
-
-        Item item1 = new Item()
-                .setName("Дрель")
-                .setDescription("Простая дрель")
-                .setAvailable(true)
-                .setOwner(user1);
-        itemRepository.save(item1);
-
         Booking bookingPast = new Booking()
                 .setStart(LocalDateTime.now().plusSeconds(1))
                 .setEnd(LocalDateTime.now().plusSeconds(2))
@@ -188,20 +159,8 @@ class ShareItJPATest {
     }
 
     @Test
+    @DisplayName("Бронирование не в прошлом и в терминальном статусе существует")
     public void testExistsApprovedBookingInPast() throws InterruptedException {
-        User user1 = new User().setName("User name1").setEmail("email@user.f1");
-        entityManager.persist(user1);
-
-        User user2 = new User().setName("User name2").setEmail("email@user.f2");
-        entityManager.persist(user2);
-
-        Item item1 = new Item()
-                .setName("Дрель")
-                .setDescription("Простая дрель")
-                .setAvailable(true)
-                .setOwner(user1);
-        itemRepository.save(item1);
-
         Booking bookingPast = new Booking()
                 .setStart(LocalDateTime.now().plusSeconds(1))
                 .setEnd(LocalDateTime.now().plusSeconds(2))
