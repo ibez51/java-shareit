@@ -1,6 +1,8 @@
-package ru.practicum.shareit;
+package ru.practicum.shareit.integrTests;
 
 import lombok.RequiredArgsConstructor;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
@@ -16,6 +18,9 @@ import ru.practicum.shareit.item.ItemController;
 import ru.practicum.shareit.item.dto.CommentCreateDto;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemUpdateDto;
+import ru.practicum.shareit.request.ItemRequestController;
+import ru.practicum.shareit.request.dto.ItemRequestCreateDto;
+import ru.practicum.shareit.request.dto.ItemRequestOutputDto;
 import ru.practicum.shareit.user.UserController;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.dto.UserUpdateDto;
@@ -26,31 +31,44 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+@DisplayName("Интеграционный тест")
 @SpringBootTest
 @AutoConfigureTestDatabase
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
-class ShareItTests {
+class ShareItIntegrTests {
     @Autowired
     private final UserController userController;
     @Autowired
     private final ItemController itemController;
     @Autowired
     private final BookingController bookingController;
+    @Autowired
+    private final ItemRequestController itemRequestController;
+    private UserDto userDto1;
+    private UserDto userDto2;
+    private ItemDto itemDto1;
+
+    @BeforeEach
+    void setUp() {
+        userDto1 = userController.addUser(new UserDto().setName("user").setEmail("user@user.com"));
+        userDto2 = userController.addUser(new UserDto().setName("user2").setEmail("user2@user.com"));
+        itemDto1 = itemController.addItem(userDto1.getId(), new ItemDto().setName("Дрель").setDescription("Простая дрель").setAvailable(true));
+    }
 
     @Test
+    @DisplayName("Проверка контекста")
     void contextLoads() {
         assertThat(userController).isNotNull();
         assertThat(itemController).isNotNull();
         assertThat(bookingController).isNotNull();
+        assertThat(itemRequestController).isNotNull();
     }
 
     @Test
+    @DisplayName("Создание пользователя")
     void testAddUser() {
-        UserDto userDto = new UserDto().setName("user").setEmail("user@user.com");
-        UserDto newUserDto = userController.addUser(userDto);
-
-        assertThat(newUserDto.getId()).isNotNull();
+        assertThat(userDto1.getId()).isNotNull();
 
         UserDto userDtoEmptyEmail = new UserDto().setName("user");
 
@@ -62,122 +80,81 @@ class ShareItTests {
     }
 
     @Test
+    @DisplayName("Обновление пользователя")
     void testUpdateUser() {
-        UserDto userDto = new UserDto().setName("user").setEmail("user@user.com");
-        userDto = userController.addUser(userDto);
-
         UserUpdateDto userUpdateDto = new UserUpdateDto().setName("update").setEmail("update@user.com");
-        UserDto addedUserDto = userController.updateUser(userDto.getId(), userUpdateDto);
+        UserDto addedUserDto = userController.updateUser(userDto1.getId(), userUpdateDto);
 
         assertEquals("update", addedUserDto.getName());
         assertEquals("update@user.com", addedUserDto.getEmail());
     }
 
     @Test
+    @DisplayName("Удаление пользователя")
     void testDeleteUser() {
-        UserDto userDto = new UserDto().setName("user").setEmail("user@user.com");
-        userDto = userController.addUser(userDto);
+        assertEquals(2, userController.getAllUsers().size());
+
+        userController.deleteUser(userDto1.getId());
 
         assertEquals(1, userController.getAllUsers().size());
-
-        userController.deleteUser(userDto.getId());
-
-        assertEquals(0, userController.getAllUsers().size());
     }
 
     @Test
+    @DisplayName("Поиск пользователя по Id")
     void testGetUser() {
-        UserDto userDto = new UserDto().setName("user").setEmail("user@user.com");
-        userDto = userController.addUser(userDto);
-
-        assertEquals("user", userController.getUser(userDto.getId()).getName());
+        assertEquals("user", userController.getUser(userDto1.getId()).getName());
         assertThrows(NullPointerException.class, () -> userController.getUser(999));
     }
 
     @Test
+    @DisplayName("Создание предмета")
     void testAddItem() {
-        UserDto userDto = new UserDto().setName("user").setEmail("user@user.com");
-        userDto = userController.addUser(userDto);
-
-        ItemDto itemDto = new ItemDto().setName("Дрель").setDescription("Простая дрель").setAvailable(true);
-        ItemDto newItemDto = itemController.addItem(userDto.getId(), itemDto);
-
-        assertEquals(itemDto.getName(), newItemDto.getName());
-        assertThrows(NullPointerException.class, () -> itemController.addItem(999, itemDto));
+        assertEquals(itemDto1.getName(), itemDto1.getName());
+        assertThrows(NullPointerException.class, () -> itemController.addItem(999, itemDto1));
     }
 
     @Test
+    @DisplayName("Обновление предмета")
     void testUpdateItem() {
-        UserDto userDto = new UserDto().setName("user").setEmail("user@user.com");
-        userDto = userController.addUser(userDto);
-
-        ItemDto itemDto = new ItemDto().setName("Дрель").setDescription("Простая дрель").setAvailable(true);
-        ItemDto newItemDto = itemController.addItem(userDto.getId(), itemDto);
-
         ItemUpdateDto itemUpdateDto = new ItemUpdateDto().setName("Дрель+").setDescription("Аккумуляторная дрель").setAvailable(false);
-        itemController.updateItem(newItemDto.getId(), userDto.getId(), itemUpdateDto);
-        assertEquals(itemUpdateDto.getName(), itemController.getItem(userDto.getId(), newItemDto.getId()).getName());
-        assertEquals(itemUpdateDto.getDescription(), itemController.getItem(userDto.getId(), newItemDto.getId()).getDescription());
-        assertEquals(itemUpdateDto.getAvailable(), itemController.getItem(userDto.getId(), newItemDto.getId()).getAvailable());
+        itemController.updateItem(itemDto1.getId(), userDto1.getId(), itemUpdateDto);
+        assertEquals(itemUpdateDto.getName(), itemController.getItem(userDto1.getId(), itemDto1.getId()).getName());
+        assertEquals(itemUpdateDto.getDescription(), itemController.getItem(userDto1.getId(), itemDto1.getId()).getDescription());
+        assertEquals(itemUpdateDto.getAvailable(), itemController.getItem(userDto1.getId(), itemDto1.getId()).getAvailable());
 
-        assertThrows(ItemOwnerConflictException.class, () -> itemController.updateItem(newItemDto.getId(), 999, itemUpdateDto));
+        assertThrows(ItemOwnerConflictException.class, () -> itemController.updateItem(itemDto1.getId(), 999, itemUpdateDto));
     }
 
     @Test
+    @DisplayName("Получение списка предметов")
     void testGetAllItems() {
-        UserDto userDto1 = new UserDto().setName("user").setEmail("user@user.com");
-        userDto1 = userController.addUser(userDto1);
-
-        UserDto userDto2 = new UserDto().setName("user").setEmail("user@user2.com");
-        userDto2 = userController.addUser(userDto2);
-
-        ItemDto itemDto1 = new ItemDto().setName("Дрель").setDescription("Простая дрель").setAvailable(true);
-        itemController.addItem(userDto1.getId(), itemDto1);
-
         ItemDto itemDto2 = new ItemDto().setName("Дрель").setDescription("Простая дрель").setAvailable(true);
         itemController.addItem(userDto2.getId(), itemDto2);
 
-        assertEquals(1, itemController.getAllItems(userDto1.getId()).size());
-        assertEquals(1, itemController.getAllItems(userDto2.getId()).size());
+        assertEquals(1, itemController.getAllItems(userDto1.getId(), 0, 10).size());
+        assertEquals(1, itemController.getAllItems(userDto2.getId(), 0, 10).size());
     }
 
     @Test
+    @DisplayName("Поиск предмета по шаблону")
     void testSearchItems() {
-        UserDto userDto1 = new UserDto().setName("user").setEmail("user@user.com");
-        userDto1 = userController.addUser(userDto1);
-
-        UserDto userDto2 = new UserDto().setName("user").setEmail("user@user2.com");
-        userDto2 = userController.addUser(userDto2);
-
-        ItemDto itemDto1 = new ItemDto().setName("Дрель").setDescription("Простая дрель").setAvailable(true);
-        itemController.addItem(userDto1.getId(), itemDto1);
-
         ItemDto itemDto2 = new ItemDto().setName("Дрель").setDescription("Простая дрель").setAvailable(true);
         itemController.addItem(userDto2.getId(), itemDto2);
 
         ItemDto itemDto3 = new ItemDto().setName("Др1ель").setDescription("Простая др1ель").setAvailable(true);
         itemController.addItem(userDto2.getId(), itemDto3);
 
-        assertEquals(2, itemController.searchItems("дРеЛь").size());
-        assertEquals(0, itemController.searchItems("").size());
+        assertEquals(2, itemController.searchItems("дРеЛь", 0, 10).size());
+        assertEquals(0, itemController.searchItems("", 0, 10).size());
 
-        assertEquals(3, itemController.searchItems("дР").size());
+        assertEquals(3, itemController.searchItems("дР", 0, 10).size());
         userController.deleteUser(userDto1.getId());
-        assertEquals(2, itemController.searchItems("дР").size());
+        assertEquals(2, itemController.searchItems("дР", 0, 10).size());
     }
 
     @Test
+    @DisplayName("Создание и вывод комментариев")
     public void testComments() throws InterruptedException {
-        UserDto userDto1 = userController.addUser(new UserDto()
-                .setName("user1")
-                .setEmail("user1@user.com"));
-
-        UserDto userDto2 = userController.addUser(new UserDto()
-                .setName("user2")
-                .setEmail("user2@user.com"));
-
-        ItemDto itemDto1 = itemController.addItem(userDto1.getId(), new ItemDto().setName("Дрель").setDescription("Простая дрель").setAvailable(true));
-
         BookingIncomingDto bookingIncomingDto = new BookingIncomingDto()
                 .setItemId(itemDto1.getId())
                 .setStart(LocalDateTime.now().plusSeconds(2))
@@ -197,13 +174,8 @@ class ShareItTests {
     }
 
     @Test
+    @DisplayName("Создание бронирования")
     public void testAddBooking() throws InterruptedException {
-        UserDto userDto1 = userController.addUser(new UserDto().setName("user1").setEmail("user1@user.com"));
-
-        UserDto userDto2 = userController.addUser(new UserDto().setName("user2").setEmail("user2@user.com"));
-
-        ItemDto itemDto1 = itemController.addItem(userDto1.getId(), new ItemDto().setName("Дрель").setDescription("Простая дрель").setAvailable(true));
-
         BookingIncomingDto bookingIncomingDtoPast = new BookingIncomingDto()
                 .setItemId(itemDto1.getId())
                 .setStart(LocalDateTime.now().plusSeconds(2))
@@ -248,16 +220,8 @@ class ShareItTests {
     }
 
     @Test
+    @DisplayName("Список всех бронирований")
     public void testGetAllBooking() throws InterruptedException {
-        UserDto userDto1 = new UserDto().setName("user1").setEmail("user1@user.com");
-        userDto1 = userController.addUser(userDto1);
-
-        UserDto userDto2 = new UserDto().setName("user2").setEmail("user2@user.com");
-        userDto2 = userController.addUser(userDto2);
-
-        ItemDto itemDto1 = new ItemDto().setName("Дрель").setDescription("Простая дрель").setAvailable(true);
-        itemDto1 = itemController.addItem(userDto1.getId(), itemDto1);
-
         BookingIncomingDto bookingIncomingDtoPast = new BookingIncomingDto()
                 .setItemId(itemDto1.getId())
                 .setStart(LocalDateTime.now().plusSeconds(1))
@@ -284,24 +248,17 @@ class ShareItTests {
                 .setEnd(LocalDateTime.now().plusDays(6));
         bookingController.addBooking(userDto2.getId(), bookingIncomingDtoFuture);
 
-        assertEquals(3, bookingController.getAllBooking(userDto2.getId(), BookingFilterState.ALL.name()).size());
-        assertEquals(1, bookingController.getAllBooking(userDto2.getId(), BookingFilterState.PAST.name()).size());
-        assertEquals(1, bookingController.getAllBooking(userDto2.getId(), BookingFilterState.CURRENT.name()).size());
-        assertEquals(1, bookingController.getAllBooking(userDto2.getId(), BookingFilterState.FUTURE.name()).size());
-        assertEquals(1, bookingController.getAllBooking(userDto2.getId(), BookingFilterState.REJECTED.name()).size());
-        assertEquals(1, bookingController.getAllBooking(userDto2.getId(), BookingFilterState.WAITING.name()).size());
+        assertEquals(3, bookingController.getAllBooking(userDto2.getId(), BookingFilterState.ALL.name(), 0, 10).size());
+        assertEquals(1, bookingController.getAllBooking(userDto2.getId(), BookingFilterState.PAST.name(), 0, 10).size());
+        assertEquals(1, bookingController.getAllBooking(userDto2.getId(), BookingFilterState.CURRENT.name(), 0, 10).size());
+        assertEquals(1, bookingController.getAllBooking(userDto2.getId(), BookingFilterState.FUTURE.name(), 0, 10).size());
+        assertEquals(1, bookingController.getAllBooking(userDto2.getId(), BookingFilterState.REJECTED.name(), 0, 10).size());
+        assertEquals(1, bookingController.getAllBooking(userDto2.getId(), BookingFilterState.WAITING.name(), 0, 10).size());
     }
 
     @Test
+    @DisplayName("Список всех бронирований по владельцу предмета")
     public void testGetAllBookingByOwner() throws InterruptedException {
-        UserDto userDto1 = new UserDto().setName("user1").setEmail("user1@user.com");
-        userDto1 = userController.addUser(userDto1);
-
-        UserDto userDto2 = userController.addUser(new UserDto().setName("user2").setEmail("user2@user.com"));
-
-        ItemDto itemDto1 = new ItemDto().setName("Дрель").setDescription("Простая дрель").setAvailable(true);
-        itemDto1 = itemController.addItem(userDto1.getId(), itemDto1);
-
         BookingIncomingDto bookingIncomingDtoPast = new BookingIncomingDto()
                 .setItemId(itemDto1.getId())
                 .setStart(LocalDateTime.now().plusSeconds(1))
@@ -328,26 +285,19 @@ class ShareItTests {
                 .setEnd(LocalDateTime.now().plusDays(6));
         bookingController.addBooking(userDto2.getId(), bookingIncomingDtoFuture);
 
-        assertEquals(3, bookingController.getAllBookingByOwner(userDto1.getId(), BookingFilterState.ALL.name()).size());
-        assertEquals(1, bookingController.getAllBookingByOwner(userDto1.getId(), BookingFilterState.PAST.name()).size());
-        assertEquals(1, bookingController.getAllBookingByOwner(userDto1.getId(), BookingFilterState.CURRENT.name()).size());
-        assertEquals(1, bookingController.getAllBookingByOwner(userDto1.getId(), BookingFilterState.FUTURE.name()).size());
-        assertEquals(1, bookingController.getAllBookingByOwner(userDto1.getId(), BookingFilterState.REJECTED.name()).size());
-        assertEquals(1, bookingController.getAllBookingByOwner(userDto1.getId(), BookingFilterState.WAITING.name()).size());
+        assertEquals(3, bookingController.getAllBookingByOwner(userDto1.getId(), BookingFilterState.ALL.name(), 0, 10).size());
+        assertEquals(1, bookingController.getAllBookingByOwner(userDto1.getId(), BookingFilterState.PAST.name(), 0, 10).size());
+        assertEquals(1, bookingController.getAllBookingByOwner(userDto1.getId(), BookingFilterState.CURRENT.name(), 0, 10).size());
+        assertEquals(1, bookingController.getAllBookingByOwner(userDto1.getId(), BookingFilterState.FUTURE.name(), 0, 10).size());
+        assertEquals(1, bookingController.getAllBookingByOwner(userDto1.getId(), BookingFilterState.REJECTED.name(), 0, 10).size());
+        assertEquals(1, bookingController.getAllBookingByOwner(userDto1.getId(), BookingFilterState.WAITING.name(), 0, 10).size());
 
-        assertThrows(IllegalBookingFilterStatusException.class, () -> bookingController.getAllBookingByOwner(userDto2.getId(), "ILLEGAL_VALUE"));
+        assertThrows(IllegalBookingFilterStatusException.class, () -> bookingController.getAllBookingByOwner(userDto2.getId(), "ILLEGAL_VALUE", 0, 10));
     }
 
     @Test
-    public void getBooking() {
-        UserDto userDto1 = new UserDto().setName("user1").setEmail("user1@user.com");
-        userDto1 = userController.addUser(userDto1);
-
-        UserDto userDto2 = userController.addUser(new UserDto().setName("user2").setEmail("user2@user.com"));
-
-        ItemDto itemDto1 = new ItemDto().setName("Дрель").setDescription("Простая дрель").setAvailable(true);
-        itemDto1 = itemController.addItem(userDto1.getId(), itemDto1);
-
+    @DisplayName("Поиск бронирования по Id")
+    public void testGetBooking() {
         BookingIncomingDto bookingIncomingDtoPast = new BookingIncomingDto()
                 .setItemId(itemDto1.getId())
                 .setStart(LocalDateTime.now().plusSeconds(1))
@@ -359,5 +309,62 @@ class ShareItTests {
         assertEquals(itemDto1.getId(), bookingController.getBooking(userDto2.getId(), bookingDtoPast.getId()).getItem().getId());
         assertThrows(NullPointerException.class, () -> bookingController.getBooking(userDto2.getId(), 100));
         assertThrows(NullPointerException.class, () -> bookingController.getBooking(100, bookingController.getBooking(userDto2.getId(), bookingDtoPast.getId()).getItem().getId()));
+    }
+
+    @Test
+    @DisplayName("Создание запроса на предмет")
+    public void testAddItemRequest() {
+        ItemRequestCreateDto itemRequestCreateDto = new ItemRequestCreateDto().setDescription("Item request description");
+        ItemRequestOutputDto itemRequestOutputDto = itemRequestController.addItemRequest(userDto1.getId(), itemRequestCreateDto);
+
+        assertEquals(1, itemRequestOutputDto.getId());
+        assertEquals("Item request description", itemRequestOutputDto.getDescription());
+        assertEquals(0, itemRequestOutputDto.getItems().size());
+
+        itemDto1 = new ItemDto().setName("Дрель").setDescription("Простая дрель").setAvailable(true).setRequestId(itemRequestOutputDto.getId());
+        itemController.addItem(userDto2.getId(), itemDto1);
+
+        assertEquals(1, itemRequestController.getItemRequest(userDto1.getId(), itemRequestOutputDto.getId()).getItems().size());
+    }
+
+    @Test
+    @DisplayName("Получить список запросов на предмет")
+    public void testGetAllItemRequests() {
+        ItemRequestCreateDto itemRequestCreateDto1 = new ItemRequestCreateDto().setDescription("Item request description");
+        itemRequestController.addItemRequest(userDto1.getId(), itemRequestCreateDto1);
+
+        ItemRequestCreateDto itemRequestCreateDto2 = new ItemRequestCreateDto().setDescription("Item request description");
+        itemRequestController.addItemRequest(userDto1.getId(), itemRequestCreateDto2);
+
+        ItemRequestCreateDto itemRequestCreateDto3 = new ItemRequestCreateDto().setDescription("Item request description");
+        itemRequestController.addItemRequest(userDto1.getId(), itemRequestCreateDto3);
+
+        assertEquals(3, itemRequestController.getAllItemRequests(userDto2.getId(), 0, 10).size());
+    }
+
+    @Test
+    @DisplayName("Поиск запроса на предмет по Id")
+    public void testGetItemRequest() {
+        ItemRequestCreateDto itemRequestCreateDto1 = new ItemRequestCreateDto().setDescription("Item request description");
+        ItemRequestOutputDto itemRequestOutputDto = itemRequestController.addItemRequest(userDto1.getId(), itemRequestCreateDto1);
+
+        assertEquals("Item request description", itemRequestController.getItemRequest(userDto1.getId(), itemRequestOutputDto.getId()).getDescription());
+        assertThrows(NullPointerException.class, () -> itemRequestController.getItemRequest(userDto1.getId(), 99));
+        assertThrows(NullPointerException.class, () -> itemRequestController.getItemRequest(99, itemRequestOutputDto.getId()));
+    }
+
+    @Test
+    @DisplayName("Получить список запросов на предмет")
+    public void testGetItemRequests() {
+        ItemRequestCreateDto itemRequestCreateDto1 = new ItemRequestCreateDto().setDescription("Item request description");
+        itemRequestController.addItemRequest(userDto1.getId(), itemRequestCreateDto1);
+
+        ItemRequestCreateDto itemRequestCreateDto2 = new ItemRequestCreateDto().setDescription("Item request description");
+        itemRequestController.addItemRequest(userDto1.getId(), itemRequestCreateDto2);
+
+        ItemRequestCreateDto itemRequestCreateDto3 = new ItemRequestCreateDto().setDescription("Item request description");
+        itemRequestController.addItemRequest(userDto2.getId(), itemRequestCreateDto3);
+
+        assertEquals(2, itemRequestController.getItemRequests(userDto1.getId()).size());
     }
 }

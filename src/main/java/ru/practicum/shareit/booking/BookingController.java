@@ -1,29 +1,36 @@
 package ru.practicum.shareit.booking;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.dto.BookingIncomingDto;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Min;
 import java.util.List;
 
 @RestController
 @RequestMapping(path = "/bookings")
 @RequiredArgsConstructor
+@Validated
 public class BookingController {
     private final BookingService bookingService;
 
     @GetMapping
     public List<BookingDto> getAllBooking(@RequestHeader(name = "X-Sharer-User-Id") Integer userId,
-                                          @RequestParam(name = "state", defaultValue = "ALL") String state) {
-        return bookingService.getAllBooking(userId, state);
+                                          @RequestParam(name = "state", defaultValue = "ALL") String state,
+                                          @RequestParam(defaultValue = "0") @Min(0) Integer from,
+                                          @RequestParam(defaultValue = "10") Integer size) {
+        return bookingService.getAllBooking(userId, state, from, size);
     }
 
     @GetMapping("/owner")
     public List<BookingDto> getAllBookingByOwner(@RequestHeader(name = "X-Sharer-User-Id") Integer userId,
-                                                 @RequestParam(name = "state", defaultValue = "ALL") String state) {
-        return bookingService.getAllBookingByOwner(userId, state);
+                                                 @RequestParam(name = "state", defaultValue = "ALL") String state,
+                                                 @RequestParam(defaultValue = "0") @Min(0) Integer from,
+                                                 @RequestParam(defaultValue = "10") Integer size) {
+        return bookingService.getAllBookingByOwner(userId, state, from, size);
     }
 
     @GetMapping("/{bookingId}")
