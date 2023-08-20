@@ -10,7 +10,9 @@ import ru.practicum.shareit.booking.dto.BookingIncomingDto;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.model.BookingFilterState;
 import ru.practicum.shareit.booking.model.BookingStatus;
-import ru.practicum.shareit.exceptions.*;
+import ru.practicum.shareit.exceptions.AccessForChangesDeniedException;
+import ru.practicum.shareit.exceptions.BookingUpdateNotAllowedException;
+import ru.practicum.shareit.exceptions.ItemIsUnavailableException;
 import ru.practicum.shareit.item.ItemService;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.UserService;
@@ -46,7 +48,7 @@ public class BookingServiceImpl implements BookingService {
 
         userService.getUser(userId);
 
-        BookingFilterState filterState = bookingFilterStateFromString(state);
+        BookingFilterState filterState = BookingFilterState.valueOf(state);
         PageRequest page = PageRequest.of(from > 0 ? from / size : 0, size);
 
         switch (filterState) {
@@ -86,7 +88,7 @@ public class BookingServiceImpl implements BookingService {
 
         userService.getUser(userId);
 
-        BookingFilterState filterState = bookingFilterStateFromString(state);
+        BookingFilterState filterState = BookingFilterState.valueOf(state);
         PageRequest page = PageRequest.of(from > 0 ? from / size : 0, size);
 
         switch (filterState) {
@@ -133,16 +135,6 @@ public class BookingServiceImpl implements BookingService {
 
         User user = userService.getUser(userId);
 
-        if (bookingIncomingDto.getEnd().isBefore(LocalDateTime.now())
-                || bookingIncomingDto.getStart().isBefore(LocalDateTime.now())) {
-            throw new DateTimeValidationException("Дата начала/окончания бронирования не может быть в прошлом.");
-        }
-
-        if (bookingIncomingDto.getEnd().isBefore(bookingIncomingDto.getStart())
-                || bookingIncomingDto.getEnd().isEqual(bookingIncomingDto.getStart())) {
-            throw new DateTimeValidationException("Дата окончания бронирования не может быть раньше или равна дате начала.");
-        }
-
         Booking booking = bookingMapper.toBooking(bookingIncomingDto, item, user, BookingStatus.WAITING);
 
         bookingRepository.save(booking);
@@ -186,13 +178,5 @@ public class BookingServiceImpl implements BookingService {
         }
 
         return booking;
-    }
-
-    private BookingFilterState bookingFilterStateFromString(String state) {
-        try {
-            return BookingFilterState.valueOf(state);
-        } catch (IllegalArgumentException ex) {
-            throw new IllegalBookingFilterStatusException("Unknown state: " + state);
-        }
     }
 }

@@ -3,12 +3,10 @@ package ru.practicum.shareit.exceptions;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import javax.validation.ConstraintViolationException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
@@ -19,22 +17,6 @@ public class ErrorHandler {
     @ResponseStatus(HttpStatus.FORBIDDEN)
     public ErrorResponse handleItemOwnerConflictError(final ItemOwnerConflictException ex) {
         log.warn("Got 403 status {}", ex.getMessage());
-
-        return new ErrorResponse(ex.getMessage());
-    }
-
-    @ExceptionHandler
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse handleMethodArgumentNotValidError(final MethodArgumentNotValidException ex) {
-        log.warn("Got 400 status {}", ex.getMessage());
-
-        return new ErrorResponse(ex.getMessage());
-    }
-
-    @ExceptionHandler
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse handleConstraintViolationError(final ConstraintViolationException ex) {
-        log.warn("Got 400 status {}", ex.getMessage());
 
         return new ErrorResponse(ex.getMessage());
     }
@@ -68,25 +50,9 @@ public class ErrorHandler {
     }
 
     @ExceptionHandler
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse handleDateTimeValidationError(final DateTimeValidationException ex) {
-        log.warn("Got 400 status {}", ex.getMessage());
-
-        return new ErrorResponse(ex.getMessage());
-    }
-
-    @ExceptionHandler
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ErrorResponse handleAccessDeniedError(final AccessForChangesDeniedException ex) {
         log.warn("Got 404 status {}", ex.getMessage());
-
-        return new ErrorResponse(ex.getMessage());
-    }
-
-    @ExceptionHandler
-    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public ErrorResponse handleIllegalBookingFilterStatusError(final IllegalBookingFilterStatusException ex) {
-        log.warn("Got 500 status {}", ex.getMessage());
 
         return new ErrorResponse(ex.getMessage());
     }
@@ -106,5 +72,4 @@ public class ErrorHandler {
 
         return new ErrorResponse(ex.getMessage());
     }
-
 }

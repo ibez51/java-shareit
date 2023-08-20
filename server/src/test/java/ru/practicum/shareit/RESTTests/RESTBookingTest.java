@@ -13,7 +13,9 @@ import ru.practicum.shareit.booking.BookingService;
 import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.dto.BookingIncomingDto;
 import ru.practicum.shareit.booking.model.BookingStatus;
-import ru.practicum.shareit.exceptions.*;
+import ru.practicum.shareit.exceptions.AccessForChangesDeniedException;
+import ru.practicum.shareit.exceptions.BookingUpdateNotAllowedException;
+import ru.practicum.shareit.exceptions.ItemIsUnavailableException;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -58,15 +60,6 @@ class RESTBookingTest {
                 .andExpect(jsonPath("$.[0].status", is(bookingDto.getStatus().name())))
                 .andExpect(jsonPath("$.[0].start", is(bookingDto.getStart().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME))))
                 .andExpect(jsonPath("$.[0].end", is(bookingDto.getEnd().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME))));
-
-        doThrow(new IllegalBookingFilterStatusException(""))
-                .when(bookingService)
-                .getAllBooking(anyInt(), anyString(), anyInt(), anyInt());
-
-        mvc.perform(get("/bookings")
-                        .accept(MediaType.ALL_VALUE)
-                        .header("X-Sharer-User-Id", 1))
-                .andExpect(status().isInternalServerError());
     }
 
     @Test
@@ -125,25 +118,7 @@ class RESTBookingTest {
                 .andExpect(jsonPath("$.start", is(bookingDto.getStart().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME))))
                 .andExpect(jsonPath("$.end", is(bookingDto.getEnd().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME))));
 
-        mvc.perform(post("/bookings")
-                        .accept(MediaType.ALL_VALUE)
-                        .header("X-Sharer-User-Id", 1)
-                        .contentType(MediaType.APPLICATION_JSON_VALUE)
-                        .content(mapper.writeValueAsString(new BookingIncomingDto())))
-                .andExpect(status().isBadRequest());
-
         doThrow(new ItemIsUnavailableException(""))
-                .when(bookingService)
-                .addBooking(anyInt(), any(BookingIncomingDto.class));
-
-        mvc.perform(post("/bookings")
-                        .accept(MediaType.ALL_VALUE)
-                        .header("X-Sharer-User-Id", 1)
-                        .contentType(MediaType.APPLICATION_JSON_VALUE)
-                        .content(mapper.writeValueAsString(bookingIncomingDto)))
-                .andExpect(status().isBadRequest());
-
-        doThrow(new DateTimeValidationException(""))
                 .when(bookingService)
                 .addBooking(anyInt(), any(BookingIncomingDto.class));
 

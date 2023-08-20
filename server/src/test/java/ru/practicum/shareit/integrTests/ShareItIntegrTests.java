@@ -199,19 +199,6 @@ class ShareItIntegrTests {
 
         assertThrows(AccessForChangesDeniedException.class, () -> bookingController.addBooking(userDto1.getId(), bookingIncomingDtoFuture));
 
-        BookingIncomingDto bookingIncomingDtoFail1 = new BookingIncomingDto()
-                .setItemId(itemDto1.getId())
-                .setStart(LocalDateTime.now().minusDays(2))
-                .setEnd(LocalDateTime.now().minusDays(1));
-
-        assertThrows(DateTimeValidationException.class, () -> bookingController.addBooking(userDto2.getId(), bookingIncomingDtoFail1));
-
-        BookingIncomingDto bookingIncomingDtoFail2 = new BookingIncomingDto()
-                .setItemId(itemDto1.getId())
-                .setStart(LocalDateTime.now().plusDays(4))
-                .setEnd(LocalDateTime.now().plusDays(3));
-        assertThrows(DateTimeValidationException.class, () -> bookingController.addBooking(userDto2.getId(), bookingIncomingDtoFail2));
-
         itemController.updateItem(itemDto1.getId(), userDto1.getId(), new ItemUpdateDto().setAvailable(false));
         assertThrows(ItemIsUnavailableException.class, () -> bookingController.addBooking(userDto2.getId(), bookingIncomingDtoFuture));
 
@@ -291,8 +278,6 @@ class ShareItIntegrTests {
         assertEquals(1, bookingController.getAllBookingByOwner(userDto1.getId(), BookingFilterState.FUTURE.name(), 0, 10).size());
         assertEquals(1, bookingController.getAllBookingByOwner(userDto1.getId(), BookingFilterState.REJECTED.name(), 0, 10).size());
         assertEquals(1, bookingController.getAllBookingByOwner(userDto1.getId(), BookingFilterState.WAITING.name(), 0, 10).size());
-
-        assertThrows(IllegalBookingFilterStatusException.class, () -> bookingController.getAllBookingByOwner(userDto2.getId(), "ILLEGAL_VALUE", 0, 10));
     }
 
     @Test

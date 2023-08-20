@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import javax.validation.ConstraintViolationException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
@@ -24,18 +25,24 @@ public class ErrorHandler {
     }
 
     @ExceptionHandler
-    @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ErrorResponse handleNotFoundError(final NullPointerException ex) {
-        StringWriter stringWriter = new StringWriter();
-        ex.printStackTrace(new PrintWriter(stringWriter));
-        log.debug("Got 404 status {} {}", ex.getMessage(), stringWriter);
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleMethodArgumentNotValidError(final MethodArgumentNotValidException ex) {
+        log.warn("Got 400 status {}", ex.getMessage());
 
         return new ErrorResponse(ex.getMessage());
     }
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse handleMethodArgumentNotValidError(final MethodArgumentNotValidException ex) {
+    public ErrorResponse handleConstraintViolationError(final ConstraintViolationException ex) {
+        log.warn("Got 400 status {}", ex.getMessage());
+
+        return new ErrorResponse(ex.getMessage());
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleDateTimeValidationError(final DateTimeValidationException ex) {
         log.warn("Got 400 status {}", ex.getMessage());
 
         return new ErrorResponse(ex.getMessage());

@@ -7,10 +7,12 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.booking.dto.BookingFilterState;
 import ru.practicum.shareit.booking.dto.BookingIncomingDto;
+import ru.practicum.shareit.exceptions.DateTimeValidationException;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Positive;
 import javax.validation.constraints.PositiveOrZero;
+import java.time.LocalDateTime;
 
 @Controller
 @RequestMapping(path = "/bookings")
@@ -48,6 +50,17 @@ public class BookingController {
     @PostMapping
     public ResponseEntity<Object> addBooking(@RequestHeader("X-Sharer-User-Id") int userId,
                                              @RequestBody @Valid BookingIncomingDto bookingIncomingDto) {
+
+        if (bookingIncomingDto.getEnd().isBefore(LocalDateTime.now())
+                || bookingIncomingDto.getStart().isBefore(LocalDateTime.now())) {
+            throw new DateTimeValidationException("Дата начала/окончания бронирования не может быть в прошлом.");
+        }
+
+        if (bookingIncomingDto.getEnd().isBefore(bookingIncomingDto.getStart())
+                || bookingIncomingDto.getEnd().isEqual(bookingIncomingDto.getStart())) {
+            throw new DateTimeValidationException("Дата окончания бронирования не может быть раньше или равна дате начала.");
+        }
+
         return bookingClient.addBooking(userId, bookingIncomingDto);
     }
 
